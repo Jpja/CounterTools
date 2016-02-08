@@ -1,0 +1,703 @@
+body 
+    {
+        background:none transparent;
+		background-color: #000;
+        
+	}
+.tab-pane
+    {
+       min-height: 200px;
+       padding: 0 5px 0 5px;
+    }
+
+.bg 
+    {
+        width: 320px;
+        min-height: 420px;
+        max-height: 700px;
+        margin: 5px 2px 5px 2px; 
+        background-color: #000;   
+        color: #ccc;
+    }
+
+
+
+
+a {
+    text-decoration: none;
+}
+
+.swapbotselect {
+    font-size: 12px;
+}
+
+.applink a:link {
+    color: #000;
+}
+
+/* visited link */
+.applink a:visited {
+    color: #000;
+}
+
+/* mouse over link */
+.applink a:hover {
+    color: #000;
+    text-decoration: none;
+}
+
+/* selected link */
+.applink a:active {
+    color: #000;
+}
+
+#ltbDirectorySearchResults {
+    
+    padding: 50px 15px 40px 15px;
+    text-align: left;
+    
+}
+
+.movetosend {
+
+    cursor: pointer;
+}
+
+.ltbDirectoryUsername {
+    
+    text-align: left;
+    font-size: 16px;
+    
+}
+
+.ltbDirectoryAddress {
+
+    margin: 0 0 15px 0;
+    text-align: left;
+    font-size: 11px;
+    
+}
+
+#pinsplash {
+	display: block;
+	z-index: 2;
+	background: #fafafa;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	top: 0px;
+	left: 0px;
+	text-align: center;
+    padding: 84px 50px 70px 50px;
+	/*opacity: 0.99;
+    filter: alpha(opacity=99); */
+}
+
+#welcomesplash {
+	display: block;
+	z-index: 2;
+
+    background-color: #000; 
+
+    color: #fff;
+	position: fixed;
+	width: 100%;
+	top: 0px;
+	left: 0px;
+	text-align: center;
+    padding: 20px 20px 90px 20px;
+	/*opacity: 0.99;
+    filter: alpha(opacity=99); */
+}
+
+#sendtoaddress {
+    
+    font-size: 12px;
+    
+}
+
+#priceBox
+    {
+/*
+	position: absolute;
+	right: 2px;
+
+	top: 0px;
+    padding: 7px 5px 0 0;
+*/
+        margin: -8px;
+        font-size: 16px;
+	    color: #616161;
+	    text-align: center;
+    }
+
+#priceBoxBank
+    {
+        margin: 0 8px 0 8px;
+    }
+
+#priceSrc
+    {
+	color: #333;
+	font-size: 10px;
+	font-weight: normal;
+	border-top: 1px solid #AAA;
+	margin-bottom: 3px;
+    }
+
+.nav-tabs > .active > a, .nav-tabs > .active > a:hover { 
+    outline: 0;
+    color: #555555;
+    background-color: #ffffff;
+    border: 1px solid #ddd;
+    border-bottom-color: transparent;
+    cursor: default;
+}
+
+
+#transTools 
+{
+    margin: 15px 5px 10px 5px;
+    padding: 0 20px 0 20px;
+}
+
+
+#freezeUnconfirmed
+{
+
+	display: none;
+    text-align: center;
+    padding-top: 12px;
+    margin-bottom: -10px;
+
+}
+
+#balanceBox
+{
+	background-color: #fafafa;
+    border: 2px solid #ccc;
+    color: #000;
+	padding: 5px 5px 8px 5px;
+	display: block;
+	border-radius: 5px;
+	text-align: center;
+	margin: 10px 5px 10px 5px;
+    z-index: 0;
+}
+
+#btcsendbox
+{
+    padding: 0px 5px 11px 5px; 
+    margin: 0 5px 5px 5px; 
+    background-color: #444; 
+
+
+    display: none;
+
+}
+
+.navbar-inverse .navbar-brand:hover, 
+.navbar-inverse .navbar-brand:focus {
+  background-color: transparent;
+  color: #999999;
+}
+
+#xcpbalance {
+    font-family: 'PT Mono', ;
+    font-size:32px;
+}
+
+.whitebox
+{
+	
+	
+	padding: 5px;
+	display: block;
+	border-radius: 5px;
+	text-align: center;
+	margin-top: 10px;
+	margin-bottom: 10px;
+
+}
+
+#xcpaddressTitle
+{
+	text-align: center;
+	font-weight: bold;
+	font-size: 14px;
+    margin-bottom: -12px;
+    color: #ccc;
+}
+
+#copyButton 
+{
+    cursor: pointer;
+
+}
+
+#newLabelButton 
+{
+    cursor: pointer;
+
+}
+
+#addresscopied
+{
+    display: none;
+	text-align: center;
+	font-style: italic;
+	font-size: 14px;
+    margin-bottom: -12px;
+    cursor: default;
+}
+
+.inputtitle
+{
+	font-weight: bold;
+	font-size: 11px;
+    margin: 0 0 5px 0;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+.scrollable-primarytoken-menu {
+    height: auto;
+    max-height: 200px;
+    overflow-x: hidden;
+}
+
+
+#addressBox
+{
+	padding: 5px;
+	font-size: 11px;
+
+	border-radius: 5px;
+	margin: 10px 0 10px 0;
+	text-align: center;
+	
+}
+
+#passphrasebox
+{
+	padding: 5px;
+	font-size: 11px;
+	background-color: #FFF;
+	border-radius: 5px;
+	margin: 10px 0 10px 0;
+	text-align: center;
+    color: #000;
+	
+}
+
+#ninjaButton {
+    
+    color: #000;
+    
+}
+
+.bigbox
+{
+	height: 26px;
+	border-radius: 5px;
+	border: 1px solid #DDD;
+	padding: 5px;
+	margin-top: 10px;
+	
+	border:0;
+}
+
+#xcpaddress 
+{
+    display: none;
+}
+
+.roundasset {
+    border-radius: 10px;
+}
+
+
+.btcasset {
+    background-color: #D49D3F;
+    color: #fff;
+    padding: 4px 0 5px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #EBC481;
+}
+
+.xcpasset {
+    background-color: #AA3939;
+    color: #fff;
+    padding: 4px 0 5px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #FDA8AA;
+}
+
+.singleasset {
+    background-color: #23688F;
+    color: #fff;
+    padding: 4px 0 5px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #67B5E0;
+}
+
+.singleasset-numeric {
+    background-color: #23688F;
+    color: #fff;
+    padding: 5px 0 6px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #67B5E0;
+}
+
+.enhancedasset {
+    
+    background-color: #546E4C;
+    color: #fff;
+    padding: 4px 0 5px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #86AD79;
+    
+}
+
+.enhancedassetwt {
+
+    background-color: #532061;
+    color: #fff;
+    padding: 4px 0 5px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #9A7AA3;
+    
+}
+
+#tutorial_splash {
+  width:      100%;
+  height:     100%; 
+  z-index:    10;
+  top:        0; 
+  left:       0; 
+  position:   fixed; 
+}
+
+#tutorial_splash_bg {
+  opacity:    0.4; 
+  background: #000; 
+  width:      100%;
+  height:     100%; 
+  top:        0; 
+  left:       0; 
+  position:   fixed; 
+}
+
+#tutorial_splash_img {
+  width:      100%;
+  height:     100%; 
+  z-index:    20;
+  top:        0; 
+  left:       0; 
+  position:   fixed; 
+}
+
+
+.singleaddress {
+    padding: 4px 0 4px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #67B5E0;
+}
+
+/*
+.enhancedasset {
+    background-image: url("/test/enhanced_asset_ltbcoin_top.png");
+    background-repeat: no-repeat;
+    background-color: #23688F;
+    color: #fff;
+    padding: 68px 0 4px 0;
+    margin: 4px 0 4px 0;
+    border: 3px solid #67B5E0;
+    height: 128px;
+}
+*/
+
+.newsArticle {
+    border-radius: 10px 10px 10px 10px;
+    box-shadow: 5px 5px 5px -2px rgba(0,0,0,0.75);
+    border: 2px solid #999; 
+    background-color: #3987AD;
+    color: #fff;
+    padding: 20px 10px 5px 10px; 
+    margin: 30px 20px 30px 20px;
+}
+
+.assetratedisplay {
+    border-radius: 10px 10px 10px 10px;
+    box-shadow: 5px 5px 5px -2px rgba(0,0,0,0.75);
+    border: 3px solid #ccc; 
+    background-color: #fafafa;
+    color: #000;
+    padding: 30px 10px 10px; 
+    margin: 30px 20px 30px 20px;
+}
+
+#shapeshiftReturnCurrency {
+
+    margin: 5px;
+}
+
+.toolicon {
+    background-color: #000;
+    height: 100px;
+    padding: 10px 0 0 0;
+    color: #fff;
+    
+
+}
+
+.swapbotselect {
+    
+    cursor: pointer;
+}
+
+.sendlabel {
+ 
+    color: yellow;
+    padding-left: 15px;
+}
+
+
+.activetool:hover {
+    background-color: #666;
+    cursor: pointer;
+}
+
+.comingsoon {
+    opacity: 0.3;
+    cursor: default;
+}
+
+.assetname {
+  
+    padding: 2px 0 2px 8px;
+    float: left;
+    font-size: 16px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.assetname-numeric {
+  
+    padding: 2px 0 2px 8px;
+    float: left;
+    font-size: 14px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.assetname-enhanced {
+  
+    padding: 2px 0 2px 8px;
+    float: left;
+    font-size: 16px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+/*
+    padding: 2px 0 2px 0;
+    margin-right: -15px;
+    float: right;
+    display: inline-block;
+*/
+
+
+.movetowallet {
+    padding: 2px 0 2px 0;
+    margin-right: -15px;
+    float: right;
+    display: block;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.archiveasset {
+    padding: 2px 0 2px 0;
+    bottom: 0px;
+    right: 0px;   
+    position: absolute;
+    display: block;
+    font-size: 12px;
+    text-decoration: underline;
+    cursor: pointer;
+    
+    display: none;
+}
+
+.tokenlink {
+    padding: 2px 0 2px 0;
+    display: inline-block;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+
+
+.assetqty {
+   
+    display: inline-block;
+    
+}
+
+.assetqtybox {
+    clear: both;
+    padding: 2px 0 2px 8px;
+    text-align: left;
+    display: block;
+    
+}
+
+#currentbalance {
+    display: inline-block;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+#clockbalance {
+    display: inline-block;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+#currenttoken-pending {
+    font-size: 14px;
+    font-style: italic;
+    
+    padding-bottom: 6px;
+    display: inline-block;
+    vertical-align: middle;
+
+    
+}
+
+.assetqty-unconfirmed {
+    font-style: italic;
+    display: inline-block;
+    
+}
+
+.addressselect {
+    margin-left: 10px;
+    width: 240px;
+}
+
+.addressselectnoadd {
+    margin-left: 10px;
+    width: 240px;
+}
+
+.addressselectnoadd-buysell {
+    width: 240px;
+}
+
+#switchtoxcp {
+    margin-top: 6px; 
+    display: none;
+    cursor: pointer;
+    text-decoration: underline;
+    color: #fff;
+    
+}
+#fiatvaluebox {
+    color: #fff;
+}
+
+.keybutton {
+    margin: 10px 0 10px 0;
+}
+.innershadow {
+   -moz-box-shadow:    inset 0 0 10px #ccc;
+   -webkit-box-shadow: inset 0 0 10px #ccc;
+   box-shadow:         inset 0 0 10px #ccc;
+}
+#footer {
+  
+	width: 100%;
+    padding: 0 10px 5px 0;
+    text-align: right;
+    bottom: 0;
+	height: 25px;
+	color: #616161;
+    font-weight: bold;
+
+}
+#refreshWallet {
+cursor: pointer;
+}
+
+/*
+#chainsobutton {
+    display: none;
+}
+*/
+
+.receivedtrans {
+    color: #5CB85C;
+    background-color: #f8f8f8;
+    padding: 4px 6px 4px 6px;
+    margin: 5px 0 5px 0;
+    border-left: 8px solid #5CB85C;
+}
+
+.senttrans {
+    color: #F20D50;
+    background-color: #f8f8f8;
+    padding: 4px 6px 4px 6px;
+    margin: 5px 0 5px 0;
+    border-left: 8px solid #F20D50;
+}
+
+.btctrans {
+    color: #00986E;
+    background-color: #f8f8f8;
+    padding: 4px 6px 4px 6px;
+    margin: 5px 0 5px 0;
+    border-left: 8px solid #00986E;
+}
+
+
+.receivedtrans a {
+    color: #333;
+}
+
+.senttrans a {
+    color: #333;
+}
+
+.btctrans a {
+    color: #333;
+}
+
+.assetnametrans {
+    font-weight: bold;
+    font-size: 16px;   
+    padding-top: 1px;
+}
+
+.assetnumerictrans {
+    font-weight: bold;
+    font-size: 14px;   
+    padding: 1px 0 5px 0;
+}
+
+.addresstrans {
+    padding-bottom: 14px;  
+}
+
+.assetqtytrans {
+    padding-top: 8px;  
+}
+
+
+
+
+

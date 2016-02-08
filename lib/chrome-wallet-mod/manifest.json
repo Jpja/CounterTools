@@ -1,0 +1,57 @@
+{
+   "author": "Joe Looney",
+   "background": {
+      "scripts": [ "js/jquery.min.js" ]
+   },
+   "browser_action": {
+      "default_icon": "images/icon-48.png",
+      "default_popup": "popup.html"
+   },
+   "description": "Wallet powered by Bitcoin and Counterparty",
+   "icons": {
+      "128": "images/icon-128.png",
+      "16": "images/icon-16.png",
+      "48": "images/icon-48.png"
+   },
+   "content_scripts": [
+    {
+      "matches": ["*://chain.so/*"],
+      "js": ["js/jquery.min.js", "js/biginteger.js", "js/hex2dec-cs.js", "js/detect.js", "js/bitcoinjs-min.js"]
+    }
+   ],
+//   "web_accessible_resources": [
+//        "*.png",
+//        "tipsplash.html",
+//        "issue-tx.html",
+//        "issueticker.js",
+//        "issue-tx-wt.html",
+//        "issueticker-wt.js",
+//        "js/jquery.min.js",
+//        "js/bootstrap.min.js",
+//        "js/apiserver.js",
+//        "js/aes.js",
+//        "js/biginteger.js",
+//        "js/utxo.js",
+//        "js/xcp-js/transactions.js",
+//        "js/xcp-js/rc4.js",
+//        "js/xcp-js/convert-type.js",
+//        "js/xcp-js/decode.js",
+//        "popup.js",
+//        "js/mnemonic.js",
+//        "js/bitcore/bitcore.min.js",
+//        "js/bitcoinsig.js",
+//        "js/brainlite.js",
+//        "js/bitcoinjs-min.js",
+//        "js/qrcode.min.js",
+//        "bootstrap.min.css",
+//        "tipsplash.js",
+//        "tipticker.js",
+//        "js/glidera.js",
+//        "js/glideraRegister.js"
+//   ],
+   "manifest_version": 2,
+   "name": "XCP Wallet",
+   "permissions": [ "storage", "clipboardWrite", "downloads", "activeTab" ],
+   "short_name": "XCP Wallet",
+   "version": "1.0.0"
+}

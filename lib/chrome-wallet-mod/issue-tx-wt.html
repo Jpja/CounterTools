@@ -1,0 +1,64 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>
+		Review Token Information
+	</title>
+    
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" language="Javascript" src="js/bootstrap.min.js"></script>
+    <script src="js/apiserver.js"></script>
+    
+    <script src="js/aes.js"></script>
+    <script src="js/biginteger.js"></script>
+    <script src="js/utxo.js"></script>
+    <script src="js/hex2dec-cs.js"></script>
+    
+    
+    
+    <script src="js/xcp-js/transactions.js"></script>
+    <script src="js/xcp-js/rc4.js"></script>
+    <script src="js/xcp-js/convert-type.js"></script>
+    <script src="js/xcp-js/decode.js"></script>
+    <script src="js/xcp-js/issuance.js"></script>
+
+    
+    <!-- from Countersign-->
+    <script src="js/mnemonic.js"></script>
+    <script src="js/bitcore/bitcore.min.js"></script>
+    <script src="js/bitcoinsig.js"></script>
+    <script src="js/brainlite.js"></script>
+    <script src="js/bitcoinjs-min.js"></script>
+    <script src="js/qrcode.min.js"></script>
+    
+    
+    <script src="tipsplash.js"></script>
+    <script src="issueticker-wt.js"></script>
+
+  
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="font-awesome/css/font-awesome.min.css" />
+    
+  
+    
+</head>
+<body>
+    <div align='center' class='h1' style='padding: 30px 0 30px 0;'>Review Token Information</div>
+    <div id="content" style='margin: auto; width: 800px; padding: 20px 0 50px 0;'></div>
+    <div align="center" id="issuefromwallet" style="display: none; padding-bottom: 100px;">
+        <button id="issuebutton" class="btn btn-lg btn-primary">Issue Token</button>
+    </div>
+    <div id="pinsplash" style="display: none; margin: 20px auto 20px auto; text-align: center; width: 600px">         
+            <form>
+                <div style="padding: 20px; background-color: rgba(0, 0, 0, 0.7);">
+                    <div class="alert alert-warning alert-dismissible" role="alert" style="font-size: 14px;">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="margin: -10px -5px 0 0; z-index: 2;"><span aria-hidden="true">&times;</span></button><p style="font-size: 24px; font-weight: bold;">STOP!</p><p>Check for <b>chrome-extension://</b> in your browser address bar.</p><div align="center" style="padding: 10px 0 10px 0;"><img src="chromeinbar.png"></div><p>Do not proceed if you see <b>http</b> or <b>www</b></p></div>
+                    <p class="lead" style="color: #fff;">Enter Wallet Password:</p>
+                    <div style="width: 60%; padding: 5px 0 25px 0; margin: auto;"><input type="password" style="text-align: center; font-size: 20px;" class="form-control" id="inputPin"></div>
+                    <div align="center"><button id="pinButton" type="submit" class="btn btn-primary">Open Wallet</button></div>
+                </div>
+            </form>
+    </div>
+</body>
+</html>

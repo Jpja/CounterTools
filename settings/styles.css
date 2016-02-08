@@ -1,0 +1,236 @@
+body {
+	background-color:gold;
+	padding:7px 0px 0px 0px; /*top right bottom left*/	 	 
+}
+h1 {
+    font-size: 30px;
+	letter-spacing: 1px;
+	margin:5px 0px 13px 0px; /*top right bottom left*/
+    font-weight: bold;
+}
+#container {
+	width:970px;
+	background-color:WhiteSmoke;
+	margin-left: auto;
+	margin-right: auto;
+	font-family: Helvetica, sans-serif;
+	border-radius: 25px;
+    border: 15px solid black; 
+}
+header {
+	color:gold;
+    background-color:black;
+    text-align:center;
+    padding:1px;
+}
+header h1 {
+    font-size: 50px;
+	letter-spacing: 3px;
+	margin:3px 0px 8px 0px; /*top right bottom left*/
+}
+header h2 {
+    font-size: 17px;
+	margin:0px 0px 0px 0px;
+}
+nav {
+    line-height:22px;
+    background-color:Silver;
+    width:190px;
+    float:left;
+    padding:0px;
+}
+nav table {
+	text-align:left;
+	text-indent: 7px;
+    width:100%;
+	margin:0px;
+    padding:7px 0px 0px 0px; /*top right bottom left*/
+	border-spacing: 0px;	
+}
+nav table .currentpage {
+    background-color:black;
+	text-align:center;
+	color:gold;
+	font-weight: bold;
+}
+
+section {
+    margin-left: 190px; /*same as nav width*/
+    padding:10px;	 	 
+}
+footer {
+    background-color:black;
+	color:gold;
+    font-size: 12px;
+    clear:both;
+    text-align:center;
+    padding:15px 0px 0px 0px; /*top right bottom left*/	 	 
+}
+footer a {
+    color: inherit;
+    text-decoration: underline;	 
+}
+input, button, select {
+    margin:5px 0px 10px 0px; /*top right bottom left*/	 	 
+    padding:3px;
+	font-size: 115%;
+}
+textarea:focus, input:focus {
+	border: 2px solid #09C;
+}
+#licence {
+    font-size:10px;
+}
+.monospace {
+	font-family: "Andale Mono", monospace;
+}
+.monospaceBold {
+	font-family: "Andale Mono", monospace;
+	font-weight: bold;
+}
+.boxInfo {
+	float: right;
+	border: 3px solid LightSlateGrey;
+	margin:5px 0px 5px 5px; /*top right bottom left*/	
+	padding: 5px;
+	background-color:LightSteelBlue;
+	width:180px;
+}
+.boxWarning {
+	float: right;
+	border: 3px solid FireBrick;
+	margin:5px 0px 5px 5px; /*top right bottom left*/	
+	padding: 5px;
+	background-color:Orange;
+	width:180px;
+}
+.boxError {
+	float: right;
+	border: 3px solid Maroon;
+	margin:5px 0px 5px 5px; /*top right bottom left*/	
+	padding: 5px;
+	background-color:OrangeRed;
+	width:180px;
+	font-weight: bold;
+}
+#walletbalances {
+	width:600px;
+	border-collapse: collapse;
+}
+#walletbalances td {
+	padding:7px 7px 7px 7px; /*top right bottom left*/
+}
+#walletbalances td:nth-child(1) {
+	text-align:left;
+}
+#walletbalances td:nth-child(2) {
+	text-align:right;
+	float:right;
+}
+#walletbalances .traddr {
+	padding:4px 7px 4px 7px; /*top right bottom left*/
+	font-family: "Lucida Console", Monaco, monospace;
+	font-weight: bold;
+	font-size:108%;
+	background-color:Silver;
+	height:40px;
+}
+#walletbalances .trbtc {
+	font-family: "Lucida Console", Monaco, monospace;
+	font-weight: bold;
+	font-size:110%;
+	background-color:LightBlue;
+}
+#walletbalances .walletbalancesassets  tr:nth-child(even) td {
+	padding:2px 7px 10px 7px; /*top right bottom left*/
+}
+#walletbalances .trxcp {
+	font-family: "Lucida Console", Monaco, monospace;
+	font-weight: bold;
+	font-size:110%;
+	background-color:PeachPuff;
+}
+#walletbalances .trassets {
+	font-family: "Lucida Console", Monaco, monospace;
+	font-weight: bold;
+	font-size:110%;
+}
+#walletbalances .cellassets {
+	padding:0px;
+}
+#walletbalances .cellicons {
+	text-align:right;
+}
+#walletbalances .cellbalance {
+	padding:10px 7px 2px 7px; /*top right bottom left*/
+}
+#walletbalances .cellprice {
+	padding:2px 7px 10px 7px; /*top right bottom left*/
+	color:dimgray;
+}
+#walletbalances .cellvalue {
+	padding:2px 7px 10px 7px; /*top right bottom left*/
+	color:dimgray;
+}
+#walletbalances .cellassetid {
+	padding:10px 7px 2px 7px; /*top right bottom left*/
+}
+#walletbalances .walletbalancesassets{
+	width:100%;
+	border-collapse: collapse;
+	margin:0px 0px 32px 0px; /*top right bottom left*/
+}
+#walletbalances .walletbalancesassets .assetodd {
+	background-color:LightBlue;
+}
+#walletbalances .walletbalancesassets .asseteven {
+	background-color:PeachPuff;
+}
+#walletbalances .walletbalancesassets tr:nth-child(odd) td {
+	padding:10px 7px 2px 7px; /*top right bottom left*/
+}
+#walletbalances .walletbalancesassets tr:nth-child(even) td {
+	padding:2px 7px 10px 7px; /*top right bottom left*/
+}
+#walletbalances .walletbalancesassets .cellassetid {
+
+}
+#walletbalances .walletbalancesassets .cellassetid a {
+    color: inherit;
+    text-decoration: none;
+}
+#walletbalances .walletbalancesassets .cellassetdescription {
+	color:dimgray;
+}
+#walletbalances a {
+    color: inherit;
+    text-decoration: underline;
+}
+
+
+#walletbalances span:hover {
+  position: relative;
+}
+
+#walletbalances span[title]:hover:after {
+  content: attr(title);
+  padding: 4px 8px;
+  color: #333;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 20;
+  white-space: nowrap;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  -moz-box-shadow: 0px 0px 4px #222;
+  -webkit-box-shadow: 0px 0px 4px #222;
+  box-shadow: 0px 0px 4px #222;
+  background-image: -moz-linear-gradient(top, #eeeeee, #cccccc);
+  background-image: -webkit-gradient(linear,left top,left bottom,color-stop(0, #eeeeee),color-stop(1, #cccccc));
+  background-image: -webkit-linear-gradient(top, #eeeeee, #cccccc);
+  background-image: -moz-linear-gradient(top, #eeeeee, #cccccc);
+  background-image: -ms-linear-gradient(top, #eeeeee, #cccccc);
+  background-image: -o-linear-gradient(top, #eeeeee, #cccccc);
+}

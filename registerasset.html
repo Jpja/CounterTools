@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<!--<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>-->
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+	
+<script>
+function prepareValues() {
+	document.getElementById("submit").disabled = false;
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"sendaddress\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+}
+function validateAndSendBroadcast() {
+	var asset = document.getElementById('assetname').value;
+	asset = asset.toUpperCase();
+	var descr = document.getElementById('assetdescr').value;
+	var quantity = document.getElementById('quantity').value;
+	var divisible = document.getElementById('divisible').checked;
+	var password = document.getElementById('password').value;
+	var address = document.getElementById("sendaddress");
+	address = address.options[address.selectedIndex].text;
+	if (password.length == 0) password = 'x'; //empty password will give exception with AES.decrypt
+	var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, password);
+	decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+	var descrAscii = descr.replace(/[^ -~]/gi, 'ƫ'); //replace with some very rare character
+	var output = "&nbsp;";
+	if (descr.length > 22) {
+		document.getElementById('sendfeedback').innerHTML = "Description can max be 22 characters.";
+	} else if (descrAscii != descr) {
+		document.getElementById('sendfeedback').innerHTML = "Description contains non-ascii characters.<br>" + highlightDiffChars(bcText,textAscii);
+	} else if (isNaN(quantity) || quantity < 0) {
+		document.getElementById('sendfeedback').innerHTML = "Quantity must be a non-negative number.";
+	} else if (decrypted == "") {
+		document.getElementById('sendfeedback').innerHTML = "Wrong password.";
+	} else {
+		document.getElementById("submit").disabled = true; 
+		createIssuance(address, asset, quantity, divisible, descr, MSIG_OUTPUT, TX_FEE, decrypted);
+	}
+}
+function randomAlphabeticAsset() {
+	var words = [];
+	words[0] = ["SUGAR","SUPER","SOFA","PARTY","GOLD","GOLDEN","SILVER","RED","BLACK","WHITE","RICH","SHINY","BIT","BABY","DOGE","BEER","COUNTER","YOUNG","OLD","CUTIE","KIND","SWEET","SEXY","FOREVER","KILLER","SMART","MATH","J","CLEVER","HORSE","DOGGY","MR","DOCTOR","NERDY","SPORTY","FAMILY","MOBSTER","COIN","COOL","CHILL"];
+	words[1] = ["MAN","WOMAN","POTATO","PUPPY","MONEY","BEACH","BABY","BOY","GIRL","GUY","DUDE","BAG","PANDA","TIGER","HORSE","DOG","CAT","KITTEN","PLUM","COIN","PIG","COW","UNCLE","AUNTIE","NURSE","LION","FARMER","MARKET","DOLLAR","SHOP","CANDY","CARAMEL","DREAM","SUIT"];
+	words[2] = ["","","","S","Z"]
+	var asset = "";
+	do {
+		var x = [];
+		for(i=0; i < words.length; i++) {
+			x[i] = Math.floor(Math.random() * words[i].length);
+		}
+		asset = words[0][x[0]] + words[1][x[1]];
+		if (x[1] > 6) asset += words[2][x[2]];
+	} while (asset.length > 12 || words[0][x[0]] == words[1][x[1]] || words[0][x[0]].slice(-1) == words[1][x[1]][0]);
+	document.getElementById("assetname").value = asset;
+	getAssetStatus();
+}
+function randomNumericAsset() {
+	//Make 9 pairs ... it's a bit more human readable
+	//Still so many combinations that collisons never happen
+	//Avoid 13 and 4 (4 is an unlucky number in China)
+	var asset = "A";
+	do {
+		var x = Math.floor(Math.random() * 10);
+		x = x.toString();
+		x = x+x;
+		asset += x;
+		asset = asset.replace("A00","A");
+		asset = asset.replace("1133","");
+		asset = asset.replace("44","");
+		asset = asset.replace("0000","00");
+		asset = asset.replace("1111","11");
+		asset = asset.replace("2222","22");
+		asset = asset.replace("3333","33");
+		asset = asset.replace("5555","55");
+		asset = asset.replace("6666","66");
+		asset = asset.replace("7777","77");
+		asset = asset.replace("8888","88");
+		asset = asset.replace("9999","99");
+	} while (asset.length < 19);
+	document.getElementById("assetname").value = asset;
+	getAssetStatus();
+}
+function getAssetFromDescription() {
+	var str = document.getElementById("assetdescr").value;
+	document.getElementById("assetname").value = numericAssetFromDescription(str);
+	getAssetStatus();
+}
+function getAssetStatus() {
+	var assetname = document.getElementById("assetname").value;
+	assetname = assetname.toUpperCase();
+	var status = '';
+	if (assetname.length < 4) {
+		
+	} else if (isValidAsset(assetname) == false) {
+		status = "Invalid name";
+	} else if (inAssetList(assetname) == true) {
+		status = "Taken";
+	}
+	document.getElementById("assetstatus").innerHTML = status;
+}
+</script>
+
+</head>
+<body onload="drawMenus();prepareValues();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">Assets are also called 'coins', 'tokens', 'shares', 'coupons' or even 'trading cards'.<br><br>Their use is highly versatile as you can store and send assets just as you can with Bitcoin. Like there is a fixed supply of BTC, you can decide the supply of your asset. The challenge is to make it valuable.<br><br>There are two kinds of assets.<br><br>Alphabetic ones are the most popular. Their names are 4 to 12 characters long and cannot start with A. It costs 0.5 XCP to register an alphabetic asset, and you can only register an unclaimed name.<br><br>Numeric assets start with 'A' followed by 17-20 digits.</div>
+<h1>Register Asset</h1>
+
+Asset Name<br>
+<input type="text" id="assetname" maxlength="21" style="width:300px;margin-bottom:0px;text-transform:uppercase;" oninput="getAssetStatus();"> <span id="assetstatus" style="color:FireBrick;font-weight:bold;">&nbsp;</span><br>
+<span style="font-size:70%;font-weight:bold;"><span onclick="randomAlphabeticAsset()" style="cursor:pointer;">[RANDOM ALPHA]</span> - <span onclick="randomNumericAsset()" style="cursor:pointer;">[RANDOM NUM]</span> - <span onclick="getAssetFromDescription()" style="cursor:pointer;">[FROM DESCRIPTION]</span></span><br><br>
+Description (Max 22 chars)<br>
+<input type="text" id="assetdescr" step="1" maxlength="22" style="width:300px;"><br>
+Quantity<br>
+<input type="number" id="quantity" min="0" style="width:150px;"> <input type="checkbox" id="divisible" checked> Divisible<br>
+Register from address<br>
+<span id="optionslist"></span><br>
+Password<br>
+<input type="password" id="password" placeholder="Password"><br>
+<input type="button" onclick="validateAndSendBroadcast()" id="submit" value="REGISTER">
+<div id="sendfeedback">&nbsp;</div>
+
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

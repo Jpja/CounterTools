@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt" async></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	<script src="lib/anchorme/anchorme.min.js"></script>
+	<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+
+<script>
+function drawWallet() {
+
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	
+	var tablecode = "<table id=\"walletbalances\">";
+	if (MY_ADDR[0] == "1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK") tablecode += "<tr><td style=\"background-color:orange;padding:8px;text-align:center;border:2px solid black;\" colspan=\"2\"><b>This is a DEMO wallet</b><br>To create your own wallet you must first <a href=\"generatepp.html\">generate</a> and <a href=\"encrypt.html\">encrypt</a> a passphrase.</td></tr><tr><td colspan=\"2\">&nbsp;</td></tr>";
+	for (i = 0; i < numAddr; i++) {
+		tablecode += "<tr class=\"traddr\"><td>#"+(i+1)+" "+MY_ADDR[i]+"</td><td class=\"cellicons\" id=\"icons"+i+"\"></td></tr>";
+		tablecode += "<tr class=\"trbtc\"><td class=\"cellassetid\">BTC</td><td class=\"cellbalance\" id=\"btcbalance"+i+"\"></td></tr>";
+		tablecode += "<tr class=\"trbtc\"><td class=\"cellprice\"id=\"btcprice"+i+"\">&nbsp;</td><td  class=\"cellvalue\" id=\"mybtcvalue"+i+"\"></td></tr>";
+		tablecode += "<tr class=\"trxcp\"><td class=\"cellassetid\">XCP</td><td class=\"cellbalance\"  id=\"xcpbalance"+i+"\"></td></tr>";
+		tablecode += "<tr class=\"trxcp\"><td  class=\"cellprice\" id=\"xcpprice"+i+"\">&nbsp;</td><td  class=\"cellvalue\" id=\"myxcpvalue"+i+"\"></td></tr>";
+		tablecode += "<tr class=\"trassets\"><td class=\"cellassets\" id=\"assets"+i+"\" colspan=\"2\"></td></tr>";
+	}
+	tablecode += "</table>";
+	document.getElementById('summary').innerHTML =  tablecode;
+	
+	prepareAPIcalls(numAddr);	
+	
+}
+
+function prepareAPIcalls(numAddr) {
+	var jsondata = "";
+	
+	//Asset balances
+	assetNameSorted = [];
+	assetBalanceSorted = [];
+	assetTable = [];
+	setTimeout(getSortAssetBalances, 130, numAddr);
+
+	//BTC balances
+	btcBalance = [];
+	setTimeout(getPrintBTCbalances, 140, numAddr);
+
+	//XCP balances
+	xcpBalance = [];
+	setTimeout(getPrintXCPbalances, 150, numAddr);
+	
+	//BTC and XCP prices and values
+	btcPriceUSD = "?";
+	xcpPriceUSD = "?";
+	xcpPriceBTC = "?";
+	
+	//Print BTC and XCP prices/values
+	setTimeout(getPrintBtcXcpPrices, 160, numAddr);
+	
+	//Display icons
+	setTimeout(displayIcons, 170, numAddr);
+}
+
+function getPrintBTCbalances(numAddr) {
+	var jsondata = "";
+	for (i = 0; i < numAddr; i++) {
+		btcBalance[i] = getBtcBalance(MY_ADDR[i]);
+		document.getElementById('btcbalance' + i).innerHTML = walletFormat(btcBalance[i]);
+	}
+}
+
+function getPrintXCPbalances(numAddr) {
+	var jsondata = "";	
+	for (i = 0; i < numAddr; i++) {
+		xcpBalance[i] = getXcpBalance(MY_ADDR[i]);
+		document.getElementById('xcpbalance' + i).innerHTML = walletFormat(xcpBalance[i]);
+	}
+}
+
+function getSortAssetBalances(numAddr) {
+	var assetName = [];
+	var assetBalance = [];
+	for (var i = 0; i < numAddr; i++) {
+		assetName[i] = [];
+		assetBalance[i] = [];
+		assetName[i][0] = "?";
+		assetBalance[i][0] = "?";
+		assetNameSorted[i] = [];
+		assetBalanceSorted[i] = [];
+		assetNameSorted[i][0] = "?";
+		assetBalanceSorted[i][0] = "?";
+		var balances = getAssetBalances(MY_ADDR[i]);
+		if (balances != '?' && balances != 'none') {
+			for(var j=0; j < balances.length; j++){
+				assetName[i][j] = balances[j].asset;
+				assetBalance[i][j] = balances[j].balance;
+			}
+		} else {
+			assetName[i][0] = "-1";
+		}
+		
+		//Sort asset names
+		var ind = -1;
+		//-Priority assets
+		for(j=0; j < assetName[i].length; j++){
+			if (POPULAR_ASSETS.indexOf(assetName[i][j]) > -1 && assetBalance[i][j] >= MIN_BALANCE_DISPLAY && IGNORE_ASSETS.indexOf(assetName[i][j]) == -1 && assetName[i][j] != "?" && assetName[i][j] != "-1" && assetName[i][j] != "XCP") {
+				ind += 1;
+				assetNameSorted[i][ind] = assetName[i][j];
+				assetBalanceSorted[i][ind] = assetBalance[i][j];
+			}
+		}
+		//-Alphabetic assets
+		for(j=0; j < assetName[i].length; j++){
+			if (POPULAR_ASSETS.indexOf(assetName[i][j]) == -1 && assetName[i][j][0] != "A" && assetBalance[i][j] >= MIN_BALANCE_DISPLAY && IGNORE_ASSETS.indexOf(assetName[i][j]) == -1 && assetName[i][j] != "?" && assetName[i][j] != "-1" && assetName[i][j] != "XCP") {
+				ind += 1;
+				assetNameSorted[i][ind] = assetName[i][j];
+				assetBalanceSorted[i][ind] = assetBalance[i][j];
+			}
+		}
+		//-Numeric assets
+		for(j=0; j < assetName[i].length; j++){
+			if (POPULAR_ASSETS.indexOf(assetName[i][j]) == -1 && assetName[i][j][0] == "A" && assetBalance[i][j] >= MIN_BALANCE_DISPLAY && IGNORE_ASSETS.indexOf(assetName[i][j]) == -1 && assetName[i][j] != "?" && assetName[i][j] != "-1" && assetName[i][j] != "XCP") {
+				ind += 1;
+				assetNameSorted[i][ind] = assetName[i][j];
+				assetBalanceSorted[i][ind] = assetBalance[i][j];
+			}
+		}
+		
+		//Print assets
+		if (ind != -1) {
+			assetTable[i] = "<table class=\"walletbalancesassets\">"; //a separate table in the asset row
+			for(j=0; j < assetNameSorted[i].length; j++){
+				var rowclass = "assetodd";
+				if ((j+1) % 2 == 0) rowclass = "asseteven";
+				var indAsset = assetListIndex(assetNameSorted[i][j]);
+				var assetDescription = "";
+				if (indAsset != -1) assetDescription = ASSET_LIST[indAsset][1];
+				if (assetDescription.length > 50) {
+					assetDescription = assetDescription.substring(0,50);
+					assetDescription = assetDescription.substring(0, Math.min(assetDescription.length, assetDescription.lastIndexOf(" ")))+" ..";
+				}
+				var assetDescrLink = anchorme.js(assetDescription,{"target":"_blank"});
+				//Properties - add symbol after name
+				var properties = '';
+				if (indAsset != -1 && ASSET_LIST[indAsset][2] == MY_ADDR[i]) { //Address is asset's owner
+					properties += "&nbsp;<span style=\"color:DarkGreen;\" title=\"Own asset\">⚘</span>";
+				}
+				if (numericAssetFromDescription(assetDescription) == assetNameSorted[i][j]) { //Numeric asset is hash of description
+					properties += "&nbsp;<span style=\"color:DarkGoldenRod;\" title=\"Asset name is hash of description\">⚓</span>";
+				}
+				if (POPULAR_ASSETS.indexOf(assetNameSorted[i][j]) > -1) { //Priority/popular asset (set your own under settings)
+					properties += "&nbsp;<span style=\"color:DarkGoldenRod;\" title=\"Popular asset\">★</span>";
+				}
+				if (CONTORVERSIAL_ASETS.indexOf(assetNameSorted[i][j]) > -1) { //Suspected fraud
+					properties += "&nbsp;<span style=\"color:DarkRed;\" title=\"Suspected fraud\">☢</span>";
+				}
+				/*
+				TODO: properties
+				父 = parent or child asset
+				Blockchain Validated Asset Metadata (BVAM)
+				*/
+				assetTable[i] += "<tr class=\""+rowclass+"\"><td class=\"cellassetid\"><a href=\"https://counterpartychain.io/asset/"+assetNameSorted[i][j]+"\" target=\"_blank\">"+assetNameSorted[i][j]+"</a>"+properties+"</td><td>"+walletFormat(assetBalanceSorted[i][j])+"</td></tr>";
+				assetTable[i] += "<tr class=\""+rowclass+"\"><td class=\"cellassetdescription\" colspan=\"2\">&nbsp;"+assetDescrLink+"</td></tr>";
+			}
+			assetTable[i] += "</table>";
+		} else {
+			assetTable[i] = "<table class=\"walletbalancesassets\"><tr><td></td><td></td></tr></table>";
+		}
+		printAssetBalances(i);
+	}
+}
+
+function printAssetBalances(ind) {
+	document.getElementById('assets'+ind).innerHTML =  assetTable[ind];
+}
+
+function getPrintBtcXcpPrices(numAddr) {
+	var btcPrice = getPrice('BTC');
+	var xcpPrice = getPrice('XCP');
+	var btcPrice = getPrice('BTC');
+	btcPriceUSD = btcPrice.usd;
+	xcpPriceUSD = xcpPrice.usd;
+	xcpPriceBTC = xcpPrice.btc;
+	
+	document.getElementById('btcprice0').innerHTML =  "&nbsp;1 BTC = "+walletFormatUSD(btcPriceUSD)+" USD";
+	document.getElementById('xcpprice0').innerHTML =  "&nbsp;1 XCP = "+walletFormatUSD(xcpPriceUSD)+" USD = "+walletFormatBTC(xcpPriceBTC)+" BTC";
+	for (i = 0; i < numAddr; i++) {
+		if(isNaN(btcPriceUSD) || isNaN(btcBalance[i])) {
+		
+		} else {
+			document.getElementById('mybtcvalue'+i).innerHTML = "$"+walletFormatUSD(btcPriceUSD*btcBalance[i]);
+		}
+		if(isNaN(xcpPriceUSD) || isNaN(xcpBalance[i])) {
+		
+		} else {
+			document.getElementById('myxcpvalue'+i).innerHTML = "$"+walletFormatUSD(xcpPriceUSD*xcpBalance[i]);
+		}
+	}
+}
+
+function displayIcons(numAddr) {
+	for (i = 0; i < numAddr; i++) {
+		var iconcode = "";
+		if (i == 0) iconcode += "<img src=\"img/iconrefresh24.png\" onclick=\"prepareAPIcalls("+numAddr+");\" style=\"cursor:pointer;\" />&nbsp;";
+		iconcode += "<img src=\"img/iconassets24.png\" onclick=\"printAssetBalances("+i+");\" style=\"cursor:pointer;\" />&nbsp;";
+		iconcode += "<img src=\"img/iconqr24.png\" onclick=\"drawQRCode("+i+");\" style=\"cursor:pointer;\" />&nbsp;";
+		iconcode += "<img src=\"img/iconbroadcast24.png\" onclick=\"viewBroadcastForm("+i+");\" style=\"cursor:pointer;\" />&nbsp;";
+		iconcode += "<img src=\"img/iconsend24.png\" onclick=\"viewSendForm("+i+");\" style=\"cursor:pointer;\" />";
+		document.getElementById('icons'+i).innerHTML = iconcode;
+	}
+}
+
+function drawQRCode(ind) {
+	var tablecode = "<table class=\"walletbalancesassets\"><tr><td>";
+	tablecode += "View on..";
+	tablecode += "<br><a href=\"http://blockscan.com/address/"+MY_ADDR[ind]+"\" target=\"_blank\">Blockscan.com</a>";
+	tablecode += "<br><a href=\"https://counterpartychain.io/address/"+MY_ADDR[ind]+"\" target=\"_blank\">Counterpartychain.io</a>";
+	tablecode += "<br><a href=\"https://www.blocktrail.com/BTC/address/"+MY_ADDR[ind]+"/transactions\" target=\"_blank\">Bloctrail.com</a>";
+	tablecode += "<br><a href=\"https://blockchain.info/address/"+MY_ADDR[ind]+"\" target=\"_blank\">Blockchain.info</a>";
+	tablecode += "</td><td id =\"assets"+ind+"qr\"></td></tr></table>";
+	document.getElementById('assets'+ind).innerHTML = tablecode;
+	new QRCode('assets'+ind+'qr', {
+								text: MY_ADDR[ind],
+								width: 120,
+								height: 120,
+								colorDark: "#000000",
+								colorLight: "#ffffff",
+								correctLevel: QRCode.CorrectLevel.Q
+							});
+}
+
+function viewBroadcastForm(ind) {
+	var tablecode = "<table><tr><td><form>";
+	tablecode += "Message (Max 32 Chars)<br><input type=\"text\" id=\"bcmessage"+ind+"\" placeholder=\"Message\" maxlength=\"32\" style=\"width:400px;\"><br>";
+	tablecode += "Value (Optional) <br><input type=\"number\" id=\"bcvalue"+ind+"\" placeholder=\"0\" step=\"1\"><br>";
+	//tablecode += "Fee Fraction (Optional) <br><input type=\"number\" id=\"bcfeefraction"+ind+"\" placeholder=\"0\" min=\"0\" max=\"99\" step=\"1\"><br>";
+	tablecode += "Password<br><input type=\"password\" id=\"password"+ind+"\" placeholder=\"Password\"><br>";
+	tablecode += "<input type=\"button\" onclick=\"prepareBroadcast("+ind+")\" id=\"submit"+ind+"\" value=\"SUBMIT BROADCAST\">";
+	tablecode += "</form></td></tr><tr><td id =\"sendfeedback"+ind+"\">&nbsp;</td></tr>";
+	tablecode += "<tr><td>&nbsp;</td></tr></table>";
+	document.getElementById('assets'+ind).innerHTML =  tablecode;
+}
+
+function prepareBroadcast(ind) {
+	var bcmessage = document.getElementById('bcmessage'+ind).value;
+	var bcvalue = Number(document.getElementById('bcvalue'+ind).value);
+	//var bcfeefraction = Number(document.getElementById('bcfeefraction'+ind).value);
+	var bcfeefraction = 0;
+	var password = document.getElementById('password'+ind).value;
+	var decrypted = decryptPassword(password);
+	var textAscii = bcmessage.replace(/[^ -~]/gi, 'ƫ'); //replace with some very rare character
+	if (textAscii != bcmessage) {
+		document.getElementById('sendfeedback'+ind).innerHTML = "Message contains non-ascii characters.<br>" + highlightDiffChars(bcmessage,textAscii);
+	} else if (bcmessage.length > 32) {
+		document.getElementById('sendfeedback'+ind).innerHTML = "Message is more than 22 characters.";
+	} else if (isNaN(bcvalue) || isNaN(bcfeefraction) || bcfeefraction < 0 || bcfeefraction > 42.94967295) {
+		//document.getElementById('sendfeedback'+ind).innerHTML = "Value must be a number and Fee Fraction must be numbers between 0 and 42.9.";
+		document.getElementById('sendfeedback'+ind).innerHTML = "Value must be a number.";
+	} else if (!isNaN(decrypted)) {
+		document.getElementById('sendfeedback'+ind).innerHTML = "Wrong password.";
+	} else {
+		document.getElementById('password'+ind).value = "";
+		sendBroadcast(MY_ADDR[ind], bcmessage, bcvalue, bcfeefraction, MSIG_OUTPUT, TX_FEE, decrypted, 'sendfeedback'+ind);
+	}
+}
+
+function viewSendForm(ind) {
+	if (isNaN(btcBalance[ind])) {
+		document.getElementById('assets'+ind).innerHTML = "<table><tr><td>API error. Bitcoin balance unknown.</td></tr></table>";
+		return;
+	}
+	if (btcBalance[ind] < TO_RECEIVER + TX_FEE) {
+		document.getElementById('assets'+ind).innerHTML = "<table><tr><td>Cannot send. The BTC balance is too low.</td></tr></table>";
+		return;
+	}
+	
+	var optionsValue = [];
+	var optionsDisplay = [];
+	var optionsBalance = [];
+	var optionsCount = 0;
+	optionsValue[optionsCount] = "BTC";
+	optionsDisplay[optionsCount] = "BTC";
+	optionsBalance[optionsCount] = btcBalance[ind] - TX_FEE;
+	optionsCount += 1;
+	if (isNaN(xcpBalance[ind]) == false && xcpBalance[ind] != 0) {
+		optionsValue[optionsCount] = "XCP";
+		optionsDisplay[optionsCount] = "XCP";
+		optionsBalance[optionsCount] = xcpBalance[ind];
+		optionsCount += 1;
+	}
+	for(i=0; i < assetBalanceSorted[ind].length; i++) {
+		if (isNaN(assetBalanceSorted[ind][i]) == false && assetBalanceSorted[ind][i] != 0) {
+			var asset = assetNameSorted[ind][i];
+			optionsValue[optionsCount] = asset;
+			optionsDisplay[optionsCount] = assetReadable(asset);
+			optionsBalance[optionsCount] = assetBalanceSorted[ind][i];
+			optionsCount += 1;
+		}
+	}
+	var optionsList = "";
+	for(i=0; i < optionsCount; i++) {
+		optionsList += "<option value=\""+optionsValue[i]+"\">"+optionsDisplay[i]+"</option>";
+	}
+
+	var tablecode = "<table><tr><td><form>";
+	tablecode += "Send Asset<br><select id=\"sendassets"+ind+"\" onchange=\"maxAmountInSpan("+ind+")\">"+optionsList+"</select><br>";
+	tablecode += "Amount <span id=\"maxamount"+ind+"\" onclick=\"maxAmountInForm("+ind+");\" style=\"cursor:pointer;\">(Max "+maxAmountSendFormat(optionsBalance[0])+")</span><br><input type=\"text\" id=\"sendamount"+ind+"\" placeholder=\"0\"><br>";
+	tablecode += "Send To<br><input type=\"text\" id=\"sendtoaddress"+ind+"\" placeholder=\"Address or Alias\"><br>";
+	tablecode += "<input type=\"button\" onclick=\"confirmSend("+ind+")\" id=\"sendvalidate"+ind+"\" value=\"VALIDATE TRANSACTION\">";
+	tablecode += "</form></td></tr><tr><td id =\"output"+ind+"\"></td></tr></table>";
+	document.getElementById('assets'+ind).innerHTML =  tablecode;
+}
+
+function maxAmountInSpan(ind) {
+	var balance = getMaxAmount(ind);
+	balance = maxAmountSendFormat(balance);
+	document.getElementById('maxamount'+ind).innerHTML =  "(Max "+balance+")";
+}
+
+function maxAmountInForm(ind) {
+	var balance = getMaxAmount(ind);
+	document.getElementById('sendamount'+ind).value =  balance;
+}
+
+function getMaxAmount(ind) {
+	var selected = document.getElementById("sendassets"+ind).value;
+	var balance = 0;
+	if (selected == "BTC") {
+		balance = btcBalance[ind] - TX_FEE;
+	} else if (selected == "XCP") {
+		balance = xcpBalance[ind];
+	} else {
+		balance = assetBalanceSorted[ind][assetNameSorted[ind].indexOf(selected)];
+	}
+	return balance;
+}
+
+function confirmSend(ind) {
+	var asset = document.getElementById("sendassets"+ind).value;
+	var amount = Number(document.getElementById('sendamount'+ind).value);
+	var recipientOrAlias = document.getElementById('sendtoaddress'+ind).value;
+	var assetInd = assetNameSorted[ind].indexOf(asset);
+	var canSend = true;
+	var recipient = recipientOrAlias;
+	var recipientPrint = recipientOrAlias;
+	if (isValidAsset(recipientOrAlias.toUpperCase())) {
+		var assetInfo = getAssetInfo(recipientOrAlias);
+		recipient = assetInfo.owner;
+		recipientPrint = assetInfo.name + " (" + recipient + ")";
+	}
+	var tablecode = "<table><tr><td>";
+	if (isNaN(amount)) {
+		tablecode += "Cannot send. Amount is not a number.";
+		canSend = false;
+	} else if (amount > assetBalanceSorted[assetInd]) { 
+		tablecode += "Cannot send. Amount selected is more than the balance.";
+		canSend = false;
+	} else if (amount < 0.00000001) { 
+		tablecode += "Cannot send. Amount selected must be a positive number.";
+		canSend = false;
+	} else if (isDivisible(asset) == false && amount % 1 !== 0) {
+		tablecode += "Cannot send. Asset is indivisible. You must send an integer amount.";
+		canSend = false;
+	} else if (isValidAddress(recipient) == false) {
+		tablecode += "Cannot send. The entered address is not valid.";
+		canSend = false;
+	} else if (btcBalance[ind] < TO_RECEIVER + TX_FEE) {
+		tablecode += "Cannot send. The BTC balance is too low.";
+		canSend = false;
+	} else if (MY_ADDR[ind] == recipient) {
+		tablecode += "Cannot send. The sender and recipient addresses are the same.";
+		canSend = false;
+	} else {
+		var costBTC = TO_RECEIVER+TX_FEE;
+		if (asset == 'BTC') costBTC = TX_FEE;
+		tablecode += "Ready to send.<br><br>";
+		tablecode += "Asset: "+assetReadable(asset)+"<br>";
+		tablecode += "Amount: "+maxAmountSendFormat(amount);
+		if (asset == 'BTC' && !isNaN(btcPriceUSD)) tablecode += " ($" + (amount*btcPriceUSD).toFixed(2) + ")";
+		if (asset == 'XCP' && !isNaN(xcpPriceUSD)) tablecode += " ($" + (amount*xcpPriceUSD).toFixed(2) + ")";
+		tablecode += "<br>To: "+recipientPrint+"<br>";
+		tablecode += "Cost: BTC " + costBTC.toFixed(8);
+		if (!isNaN(btcPriceUSD)) tablecode += " ($" + (costBTC*btcPriceUSD).toFixed(2) + ")";
+		tablecode += "<br><br>Enter Password:<br><input type=\"password\" id=\"password"+ind+"\" placeholder=\"Password\"><br>";
+		tablecode += "<input type=\"button\" onclick=\"prepareSend("+ind+",'"+asset+"',"+amount+",'"+recipient+"')\" id=\"sendconfirm"+ind+"\" value=\"CONFIRM & SEND\">";
+		tablecode += "</td></tr><tr><td id =\"sendfeedback"+ind+"\">&nbsp;</td></tr>";
+		canSend = true;
+	}
+	tablecode += "<tr><td>&nbsp;</td></tr></table>";
+	document.getElementById('assets'+ind).innerHTML = tablecode;
+}
+
+function prepareSend(ind, asset, amount, recipient) {
+	var password = document.getElementById('password'+ind).value;
+	var decrypted = decryptPassword(password);
+	
+	if (isNaN(decrypted)) {
+		document.getElementById('password'+ind).value = "";
+		if (asset == 'BTC') {
+			sendBTC(MY_ADDR[ind], recipient, amount, TX_FEE, decrypted, 'sendfeedback'+ind);
+		} else {
+			sendXCP_opreturn(MY_ADDR[ind], recipient, asset, amount, TO_RECEIVER, TX_FEE, decrypted, 'sendfeedback'+ind);	
+		}
+	} else {
+		document.getElementById('sendfeedback'+ind).innerHTML = "Wrong password";  
+	}
+}
+
+</script>
+
+</head>
+<body onload="drawMenus();drawWallet();">
+
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+<h1>My Address Balances</h1>
+<div id="summary"></div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

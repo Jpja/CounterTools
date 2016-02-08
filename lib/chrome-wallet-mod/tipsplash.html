@@ -1,0 +1,187 @@
+<!doctype html>
+
+<html>
+<head>
+	
+<title>Send Tokens from Tokenly Pockets</title>
+   
+         
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" language="Javascript" src="js/bootstrap.min.js"></script>
+    <script src="js/apiserver.js"></script>
+    
+    <script src="js/aes.js"></script>
+    <script src="js/biginteger.js"></script>
+    <script src="js/utxo.js"></script>
+    
+    
+    
+    <script src="js/xcp-js/transactions.js"></script>
+    <script src="js/xcp-js/rc4.js"></script>
+    <script src="js/xcp-js/convert-type.js"></script>
+    <script src="js/xcp-js/decode.js"></script>
+
+
+    
+    <!-- from Countersign-->
+    <script src="js/mnemonic.js"></script>
+    <script src="js/bitcore/bitcore.min.js"></script>
+    <script src="js/bitcoinsig.js"></script>
+    <script src="js/brainlite.js"></script>
+    <script src="js/bitcoinjs-min.js"></script>
+    <script src="js/qrcode.min.js"></script>
+    
+    
+    <script src="tipsplash.js"></script>
+    <script src="tipticker.js"></script>
+  
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="font-awesome/css/font-awesome.min.css" />
+    
+    <style>
+    .assetname {
+        font-weight: bold;
+        font-size: 18px;
+    }
+    .scrollable-menu {
+        height: auto;
+        max-height: 240px;
+        overflow-x: hidden;
+    }
+    a {
+        
+    }
+    #whitetipbox {
+        border-radius: 25px;
+        border: 2px solid #000;
+        padding: 20px; 
+        background-color: #fff;
+        width: 600px;
+        margin: 20px auto 20px auto;
+        box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.5);
+    }
+        body {
+            background-image: url(ltb_bg.jpg);
+            background-repeat: repeat;
+        }
+    .linkpointer {
+	cursor: pointer;
+    }
+    .hideEncrypted {
+        font-size: 32px; 
+        border: 5px solid #BB827B; 
+        border-radius: 5px; 
+        background-color: #E3D1CC; 
+        width: 480px; 
+        margin: auto; 
+        display: none;
+    }
+    </style>
+    
+</head>
+<body>	
+   
+    <div id="passphrasefromstorage" style="display: none;"></div>
+    <div id="sendtoaddress" style="display: none;">1LrM4bojLAKfuoFMXkDtVPMGydX1rkaMqH</div>
+    <div id="xcpaddress" style="display: none;"></div>
+    <div id="btcbalhide" style="display: none;"></div>
+    
+    <div align="center" style="margin: auto; padding: 30px 0 10px 0;">
+        <img src='pockets-128.png' height="80px" width="80px">
+    </div>
+    
+    <div id="whitetipbox">
+    
+        <div id="tipsendcomplete" class="h1" align="center"></div>
+        <div style="width: 480px; margin: auto; padding-bottom: 50px;" class="lead tipsendcomplete" align="center">
+
+           <div align="center" style="padding: 10px 0 20px 0;">
+                <div style="font-size: 48px; font-weight: 100; padding: 0 0 5px 0;">Send to</div>
+                <div id="tip-label" style="font-size: 36px; font-weight: bold;"></div>
+                <div id="tip-address" style="font-size: 14px; padding: 5px 0 20px 0;"></div>
+
+                <div id="acceptedbox">
+
+                    <div class="panel panel-success" style="margin: 20px 0 20px 0; width: 50%; font-size: 14px;">
+                      <div class="panel-heading">Now Accepting</div>
+                      <div class="panel-body">
+                        <div id="acceptedtokens" style="font-weight: bold; font-size: 18px;"></div>
+                      </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+            <div class="progress" style="margin-top: 30px;">
+              <div class="progress-bar progress-bar-info progress-bar-striped" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+              </div>
+            </div>
+
+
+            <div id="pinsplash" style="display: none; margin: 20px 0 20px 0;">         
+                <form>
+                <div style="padding: 20px; background-color: rgba(0, 0, 0, 0.7);">
+                    <div class="alert alert-warning alert-dismissible" role="alert" style="font-size: 14px;">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close" style="margin: -10px -5px 0 0; z-index: 2;"><span aria-hidden="true">&times;</span></button><p style="font-size: 24px; font-weight: bold;">STOP!</p><p>Check for <b>chrome-extension://</b> in your browser address bar.</p><div align="center" style="padding: 10px 0 10px 0;"><img src="chromeinbar.png"></div><p>Do not proceed if you see <b>http</b> or <b>www</b></p></div>
+                <p class="lead" style="color: #fff;">Enter Wallet Password:</p>
+                <div style="width: 60%; padding: 5px 0 25px 0;"><input type="password" style="text-align: center; font-size: 20px;" class="form-control" id="inputPin"></div>
+                <div align="center"><button id="pinButton" type="submit" class="btn btn-primary">Open Wallet</button></div>
+                </div>
+                </form>
+                <!--<div align="center" style="margin-top: 80px;"><button id="pinButton" class="btn btn-xs btn-danger resetAddress">Reset Wallet Passphrase</button></div>-->
+            </div>
+
+            <div class="hideEncrypted" align="center">    
+
+                <div style="margin: 20px auto 5px auto; width: 300px;">
+                    <div style="font-weight: bold; padding-bottom: 3px; font-size: 14px;" align="center">Your Wallet Address</div>
+                    <select id="walletaddresses" class="addressselect form-control" style="font-size: 12px; border: 2px solid #BB827B;"></select>
+                </div>
+                <div align="center" id="btcbalance" style="padding: 0 0 30px 0;"></div>
+
+              <div id="tokendropdown">  
+                <div class="row" style="width: 375px; margin: auto;">
+
+                    <div id="fulldropdown" class="col-xs-12" align="center" style="height: 90px;">
+                        <div class="dropdown dropup" align="center" style="margin: 0 auto 0 auto;">
+                          <button class="btn btn-default dropdown-toggle" style="border: 2px solid #BB827B; width: 345px; height: 74px;" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+                            <div id="assetdisplayed" style="display: inline-block; padding: 5px 10px 0 10px;"></div>  
+                            <span class="caret"></span>
+                          </button>
+                          <ul class="assetselect dropdown-menu scrollable-menu" role="menu" aria-labelledby="dropdownMenu1">
+
+                          </ul>
+                        </div>
+                        <div style="font-size: 12px; padding: 5px 0 0 0;">Only accepted tokens will appear above.</div>
+                    </div>
+                    <div id="dropdown-working" style="display: none; height: 90px; padding-top: 10px;" align="center"><i class="fa fa-cog fa-spin fa-2x"></i></div>
+                </div>
+
+                <div class="row" style="width: 350px; margin: 40px auto; padding: 0 0 0 0;">
+                    <div class="col-xs-12" align="center" style="background-color: #593E3B; padding: 15px 20px 20px 20px; border-radius: 15px; border: 4px solid #BB827B;">
+                        <div align="center" style="color: #fff; font-size: 20px; font-weight: bold; padding-bottom: 10px;">Enter Amount</div>
+                        <div style="padding: 10px 0 15px 0;"> 
+                          <input type="text" class="form-control" id="sendtoamount" placeholder="Amount of Tokens to Send" style="border: 1px solid #BB827B; text-align: center;">
+                             </div>
+                          <div>
+                            <button id="sendtokenbutton" class="btn btn-success" type="button" style="border: 1px solid #BB827B; ">Send <span class="displayedassetname"></span></button>
+                          </div>
+                       
+                    </div>
+
+                </div>
+              </div>
+
+            </div>
+
+
+
+        </div>
+   
+<div id="nameversion" align="center" class="small"></div>
+</div>
+
+</body>
+</html>
+

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+	
+<script>
+function prepareValues() {
+	document.getElementById("submit").disabled = false;
+	document.getElementById('bcvalue').value = 0;
+	document.getElementById('bcfeefraction').value = 0;
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"sendaddress\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+}
+function validateAndSendBroadcast() {
+	var bcText = document.getElementById('bcmessage').value;
+	var bcValue = document.getElementById('bcvalue').value;
+	bcValue = Number(bcValue);
+	var bcFeeFraction = document.getElementById('bcfeefraction').value;
+	bcFeeFraction = Number(bcFeeFraction);
+	var password = document.getElementById('password').value;
+	var address = document.getElementById("sendaddress");
+	address = address.options[address.selectedIndex].text;
+	if (password.length == 0) password = 'x'; //empty password will give exception with AES.decrypt
+	var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, password);
+	decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+	var textAscii = bcText.replace(/[^ -~]/gi, 'ƫ'); //replace with some very rare character
+	var output = "&nbsp;";
+	if (textAscii != bcText) {
+		document.getElementById('sendfeedback').innerHTML = "Message contains non-ascii characters.<br>" + highlightDiffChars(bcText,textAscii);
+	} else if (isNaN(bcValue) || isNaN(bcFeeFraction) || bcFeeFraction < 0 || bcFeeFraction > 42.94967295) {
+		document.getElementById('sendfeedback').innerHTML = "Value must be a number and Fee Fraction must be numbers between 0 and 42.9.";
+	} else if (decrypted == "") {
+		document.getElementById('sendfeedback').innerHTML = "Wrong password.";
+	} else {
+		document.getElementById("submit").disabled = true; 
+		sendBroadcast(address, bcText, bcValue, bcFeeFraction, MSIG_OUTPUT, TX_FEE, decrypted);
+	}
+}
+</script>
+
+</head>
+<body onload="drawMenus();prepareValues();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">A broadcast is a special transaction. Once sent it can never be deleted. A broadcast is linked to the sender's address.<br><br>You can issue and settle bets with broadcasts. That's what 'value' and 'fee fraction' are for.<br><br>However, broadcasts are more commonly used to engrave text on the blockchain.</div>
+<h1>Broadcast Text or Bet</h1>
+
+Message (Max 32 Chars)<br>
+<input type="text" id="bcmessage" maxlength="32" style="width:400px;"><br>
+Value (Optional)<br>
+<input type="number" id="bcvalue" step="1" style="width:100px;"><br>
+Fee Fraction [0-42%] (Optional)<br>
+<input type="number" id="bcfeefraction" min="0" max="42.94967295" step="1" style="width:100px;"> %<br>
+Broadcast from address<br>
+<span id="optionslist"></span><br>
+Password<br>
+<input type="password" id="password" placeholder="Password"><br>
+<input type="button" onclick="validateAndSendBroadcast()" id="submit" value="SUBMIT BROADCAST">
+<div id="sendfeedback">&nbsp;</div>
+
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

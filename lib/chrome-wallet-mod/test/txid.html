@@ -1,0 +1,72 @@
+<html>
+<head>
+    <script src="../js/bitcoinjs-min.js"></script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bitcore/bitcore.js"></script>
+    <script src="../js/mnemonic.js"></script>
+    <script src="../js/utxo.js"></script>
+    <script src="../js/xcp-js/transactions.js"></script>
+    <script src="../js/xcp-js/rc4.js"></script>
+    <script src="../js/xcp-js/convert-type.js"></script>
+    <script src="../js/xcp-js/decode.js"></script>
+    
+    <script src="../popup.js"></script>
+ 
+    
+<script>
+
+
+
+//var bitcore = require('bitcore');
+    
+var rawtx1 = "0100000001562383b3de68b475fd95a6dc66bb1af31fd82f3f1abcd32233eec01e13cf3ba2020000006a473044022040a8b61eb41d2a19bd948c2dd7dc81ec16fbdd1b504aafef7361d013b8fff757022021c9ca5cc11e103507aaf35a5e2d6b9e527b9dfdea9b7c4ec16b635634588bd0012102b5e1427956f13da0f726fa523f917bbf3fce76ce5d30d023d48c85cdcd97a70affffffff035e150000000000001976a914ab34b5c668a8ed435ede840b6f40e3eddb455c6288ac781e00000000000069512102eb57b9dba275afd0ed6b892a820f58a8043ce4ef79e2b88243ff6cb70fbc4e74210293dc611c5e88c5414faee4e6eb135d6ba5433f837120092b9cf279a905230eb72102b5e1427956f13da0f726fa523f917bbf3fce76ce5d30d023d48c85cdcd97a70a53ae94c70300000000001976a9148b60195db4692837d7f61b7be8aa11ecdfaecdcf88ac00000000";
+   
+var rawtx2 = "0100000001ef7b8e67d90f1aab584d2bc98ee56337119a0dcf63e1e973da11b251a878d5a3020000006946304302206aa56a01654c07ba360194c06dbe8f2e47f63b12026a53997627ca36d33928dd021f53a2a10784290009a172e37a52d3e369dc7c8f6f23d6fe43ec6756cb1fc05f0121024f73dc5d4de76e45b500f92dba77985117697107363d194cc33f1d1c15464ccdffffffff035e150000000000001976a9147d5c7a0206be469b32761032f7b28d8beb6ade3088ac781e00000000000069512102dbc74f0aa3a8c03214715226c862104a7b9354ed33d50c43abca93574d42b2302102aa35f89029881ada1d7825b2ac7c8a8260e8ff4fa22aa5f1d26dbaa2b10ea8ad21024f73dc5d4de76e45b500f92dba77985117697107363d194cc33f1d1c15464ccd53aee8ae0400000000001976a914d9bf84dcb3f98fc01334b8bf53441ecfc5edad1688ac00000000";   
+    
+var rawtx3 = "0100000001e1db5bd06f9aeb8e16c683794286f0ba93145f93727a6012d383300c33f8f190020000006b48304502210094ff32c5e8a3b9483035271bb40ca73549bd42ffaf1b731094f2498d302d99fc022046b033700875f5bd9a3c5281da4317a82045401afd6c0b2f3f4db70c090190b0012103e868f49b8bd3d040e2103a0bc8037b7d2eb932e30f120ec13d0720d5fa8c9e01ffffffff035e150000000000001976a914ab34b5c668a8ed435ede840b6f40e3eddb455c6288ac781e000000000000695121029c4b206b0b3a30c3f46eb5b89fe79a5e3a517b7396f9f24b0195eecf0ddc39ab210286a0ccf179187fe6d8e68d263ca5cabb8ce90c44af243bdd15e1c7916fd922c52103e868f49b8bd3d040e2103a0bc8037b7d2eb932e30f120ec13d0720d5fa8c9e0153aef62b0100000000001976a9147d5c7a0206be469b32761032f7b28d8beb6ade3088ac00000000";
+
+//test 1
+var firstSHA = Crypto.SHA256(Crypto.util.hexToBytes(rawtx1))
+var secondSHA = Crypto.SHA256(Crypto.util.hexToBytes(firstSHA))    
+   
+console.log(reverseBytes(secondSHA));  
+console.log("25c81dc00e262a6be80f8774d69437e6906bfe81c02b0e509ae95912883c7c97");
+    
+
+//test 2
+firstSHA = Crypto.SHA256(Crypto.util.hexToBytes(rawtx2))
+secondSHA = Crypto.SHA256(Crypto.util.hexToBytes(firstSHA)) 
+
+console.log(reverseBytes(secondSHA));  
+console.log("8e3b8719c19ac70a08e27673d90c7c025ccc5af83d070e5a907eea3df724a314");
+    
+
+//test 3
+firstSHA = Crypto.SHA256(Crypto.util.hexToBytes(rawtx3))
+secondSHA = Crypto.SHA256(Crypto.util.hexToBytes(firstSHA)) 
+
+console.log(reverseBytes(secondSHA));  
+console.log("4f0307d0cffbd37bbb6de8a4d2ffedabf700ecc421a4a017762e6f3bb9c64dff");
+
+    
+$.getJSON( "https://poloniex.com/public?command=returnOrderBook&currencyPair=BTC_LTBC&depth=1", function( data ) {
+    var btcrate = data.asks[0][0];
+    
+    $.getJSON( "https://poloniex.com/public?command=returnOrderBook&currencyPair=USDT_BTC&depth=1", function( data ) {
+        var usdtrate = data.asks[0][0];
+    
+        var ltbperusdt = 1 / (parseFloat(btcrate)*parseFloat(usdtrate));    
+        
+        console.log(ltbperusdt);
+
+    });
+});
+
+</script>
+</head>
+<body>
+
+   
+        
+</body>
+</html>

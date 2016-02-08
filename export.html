@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/pushtx.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script>
+function validateInput() {
+	var input = document.getElementById('password').value;
+	var output = "&nbsp;";
+	var ppClean = cleanPPformat(input);
+	var words = ppClean.split(' ');
+	if (words.length == 12 && words[11].length >= 3) {
+		if (isValidPP(ppClean)) {
+			output = "Passphrase OK";
+		} else {
+			var suggest = repairPP(ppClean);
+			if (suggest.indexOf("???") > -1) {
+				output = "The entered passphrase is not valid.<br>" + highlightDiffWords(suggest, ppClean);
+			} else {
+				output = "Do you mean<br>" + highlightDiffWords(suggest, ppClean)  + "?";
+			}
+		}
+	} else {
+		var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, input);
+		decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+		if (isValidPP(decrypted)) {
+			output = "Password OK";
+		} else {
+			output = decrypted;
+		}
+	}
+	document.getElementById('pwfeedback').innerHTML = output;
+}
+function generate() {
+	//validate input password or passphrase
+	var inputpw = document.getElementById('password').value;
+	var output = "";
+	var inputsOK = false;
+	var ppClean = cleanPPformat(inputpw);
+	if (isValidPP(ppClean)) {
+		inputsOK = true;
+	} else {
+		var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, inputpw);
+		decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+		if (isValidPP(decrypted)) {
+			inputsOK = true;
+			ppClean = decrypted;
+		}
+	}
+	if (inputsOK == false) {
+		output = "Please enter the correct password or a valid 12 word passphrase.";
+		document.getElementById("genfeedback").innerHTML = output;
+		return;
+	}
+	
+	//get inputs
+	var numAddr = document.getElementById('numAddr').value;
+	var privatekeys = document.getElementById('privatekeys').checked;
+	var addresscount = document.getElementById('addresscount').checked;
+	var radios = document.getElementsByName('exportformat');
+	var radioSelect = 0;
+	for (var i = 0; i < radios.length; i++) {
+		if (radios[i].checked) {
+			radioSelect = i; //0=CSV,1=JSON 
+			break;
+		}
+	}
+	
+	//prepare export
+	var addr = [];
+	var addrKey = genAddr(ppClean,numAddr,true);
+	var countAddr = [];
+	var countAddrKey = [];
+	for (var i = 0; i < addrKey.length; i++) {
+		addr[i] = addrKey[i][0];
+		countAddr[i] = [];
+		countAddr[i][0] = i+1;
+		countAddr[i][1] = addrKey[i][0];
+		countAddrKey[i] = [];
+		countAddrKey[i][0] = i+1;
+		countAddrKey[i][1] = addrKey[i][0];
+		countAddrKey[i][2] = addrKey[i][1];
+	}	
+	output = '';
+	if (radioSelect <= 1) { //CSV
+		for (var i = 0; i < addr.length; i++) {
+			if (addresscount) output += (i+1) + ","; //if you want quotes also around number: "\"" + (i+1) + "\",";
+			output += "\"" + addr[i] + "\"";
+			if (privatekeys) output += ",\"" + addrKey[i][1] + "\"";
+			output += "\n";
+		}
+	} else if (radioSelect == 2 && privatekeys == false && addresscount == false) { //JSON, address only
+		output += JSON.stringify(addr, null, '   ');
+	} else if (radioSelect == 2 && privatekeys == false && addresscount == true) { //JSON, address only (plus count) 
+		output += JSON.stringify(countAddr, null, '   ');
+	} else if (radioSelect == 2 && privatekeys == true && addresscount == false) { //JSON, address and key
+		output += JSON.stringify(addrKey, null, '   ');
+	} else if (radioSelect == 2 && privatekeys == true && addresscount == true) { //JSON, address and key (plus count)
+		output += JSON.stringify(countAddrKey, null, '   ');
+	} else { //this shall never happen
+		output += "Input Error";
+	}
+	if (radioSelect == 0) output = output.replace(/\"/g,""); //CSV without quotes
+	output = "<pre style=\"background-color:Linen ;font-size:14px;\"><code>" + output + "</code></pre>";
+	document.getElementById("genfeedback").innerHTML = output;
+}
+</script>
+</head>
+<body onload="drawMenus();firstEntropy();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Export Addresses and Keys</h1>
+
+<div id="paperwallet">
+<form>
+	Select options for export.<br><br>
+	<input type="number" id="numAddr" value="12" min="1" step="1" style="width:80px;"> # of addresses<br>
+	<input type="checkbox" id="addresscount"> Address count<br>
+	<input type="checkbox" id="privatekeys" checked> Private keys<br>
+	<input type="radio" name="exportformat" value="csv" checked> CSV<br>
+	<input type="radio" name="exportformat" value="csvquotes"> CSV with quotes<br>
+	<input type="radio" name="exportformat" value="json"> JSON<br>
+	Password or 12 Word Passphrase<br>
+	<input type="password" onkeyup="validateInput()" id="password" placeholder="PASSWORD" style="width:545px;">
+</form>
+<div id="pwfeedback">&nbsp;</div>
+
+<button onclick="generate()">Export</button>
+<div id="genfeedback"></div>
+</div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

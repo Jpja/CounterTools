@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+	
+<script>
+function prepareValues() {
+	document.getElementById("submit").disabled = false;
+	document.getElementById('bcvalue').value = 0;
+	document.getElementById('bcfeefraction').value = 0;
+	document.getElementById('waitsecs').value = 20;
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"sendaddress\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+}
+function validateAndSendBroadcasts() {
+	var bcInputs = document.getElementById('bcmessages').value.split('\n');
+	var bcTexts = [];
+	var bcValueDefault = document.getElementById('bcvalue').value;
+	bcValueDefault = Number(bcValueDefault);
+	var bcValues = [];
+	var bcFeeFractionDefault = document.getElementById('bcfeefraction').value;
+	bcFeeFractionDefault = Number(bcFeeFractionDefault);
+	var bcFeeFractions = [];
+	var waitSecs = document.getElementById('waitsecs').value;
+	var password = document.getElementById('password').value;
+	var address = document.getElementById("sendaddress");
+	address = address.options[address.selectedIndex].text;
+	if (password.length == 0) password = 'x'; //empty password will give exception with AES.decrypt
+	var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, password);
+	decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+	//find all texts, values and fee fractions
+	for(var i = 0;i < bcInputs.length;i++){
+		var split = bcInputs[i].split('/');
+		if (split.length < 3 || isNaN(split[split.length-2]) || isNaN(split[split.length-1])) {
+			bcTexts[i] = bcInputs[i];
+			bcValues[i] = bcValueDefault;
+			bcFeeFractions[i] = bcFeeFractionDefault;
+		} else {
+			bcTexts[i] = bcInputs[i].substring(0,bcInputs[i].lastIndexOf("/"+split[split.length-2]+"/"+split[split.length-1]))
+			bcValues[i] = Number(split[split.length-2]);
+			bcFeeFractions[i] = Number(split[split.length-1]);
+		}
+		
+	}
+	//return if any invalid value
+	for(var i = 0;i < bcInputs.length;i++){
+		var textAscii = bcTexts[i].replace(/[^ -~]/gi, 'ƫ'); //replace with some very rare character
+		if (bcTexts[i].length > 32) {
+			document.getElementById('sendfeedback').innerHTML = "Broadcast #"+ (i+1) +" is invalid<br>Max text length is 32 chars.";
+			return;
+		} else if (textAscii != bcTexts[i] || isNaN(bcValues[i]) || isNaN(bcFeeFractions[i]) || bcFeeFractions[i] < 0 || bcFeeFractions[i] > 42.94967295) {
+			document.getElementById('sendfeedback').innerHTML = "Broadcast #"+ (i+1) +" is invalid<br><i>" + highlightDiffChars(bcTexts[i],textAscii) +"/"+bcValues[i]+"/"+bcFeeFractions[i]+"</i>";
+			return;
+		}
+	}
+	
+	//Print plan of broadcasts
+	var output = "<pre>Broadcast Plan";
+	for(var i = 0;i < bcInputs.length;i++){
+		var d = new Date();
+		d.setSeconds(d.getSeconds() + 1 + i*waitSecs);
+		output += "\n" + d.toLocaleTimeString() + "   ";
+		output += fixedlength(bcTexts[i], 33) + fixedlength(bcValues[i], 12) + fixedlength(bcFeeFractions[i], 12);
+	}
+	output += "</pre>";
+	document.getElementById('broadcastplan').innerHTML = output;
+	
+	//Call broadcasts after timeout
+	var timeNow = new Date();
+	for(var i = 0;i < bcInputs.length;i++){
+		var d = new Date();
+		d.setSeconds(d.getSeconds() + 1 + i*waitSecs);
+		var waitMs = Math.abs(d - timeNow);
+		setTimeout(sendBroadcast, waitMs, address,  bcTexts[i], bcValues[i], bcFeeFractions[i], MSIG_OUTPUT, TX_FEE, decrypted);
+	}
+}
+</script>
+
+</head>
+<body onload="drawMenus();prepareValues();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">Enter one broadcast per line.<br><br>The text must be max 32 chars, ascii only.<br><br>Optionally add a value and a fee fraction to a broadcast. Do it on the following format <i>message/value/fee</i>, e.g. <i>Value is pi, no fee/3.14/0</i></i><br><br>Your address must have several UTXOs to make many broadcasts. Send BTC dust to your address multiple times to achieve this.</div>
+<h1>Make Multiple Broadcasts</h1>
+
+Messages (One per line)<br>
+<textarea  id="bcmessages" rows="8" cols="50"></textarea><br>
+Default Value (Optional)<br>
+<input type="number" id="bcvalue" step="1" style="width:100px;"><br>
+Default Fee Fraction [0-42%] (Optional)<br>
+<input type="number" id="bcfeefraction" min="0" max="42.94967295" step="1" style="width:100px;"> %<br>
+Seconds Between Broadcast (Min 10)<br>
+<input type="number" id="waitsecs" min="10" step="1" style="width:100px;"><br>
+Broadcast from address<br>
+<span id="optionslist"></span><br>
+Password<br>
+<input type="password" id="password" placeholder="Password"><br>
+<input type="button" onclick="validateAndSendBroadcasts()" id="submit" value="SUBMIT BROADCASTS">
+<div id="sendfeedback">&nbsp;</div>
+<div id="broadcastplan">&nbsp;</div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

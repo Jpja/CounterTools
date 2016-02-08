@@ -1,0 +1,57 @@
+<html>
+<head>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bitcore/bitcore.min.js"></script>
+    <script src="../js/mnemonic.js"></script>
+    <script src="../js/utxo.js"></script>
+    <script src="../js/xcp-js/transactions.js"></script>
+    <script src="../js/xcp-js/rc4.js"></script>
+    <script src="../js/xcp-js/convert-type.js"></script>
+    <script src="../js/xcp-js/decode.js"></script>
+    
+<script>
+ 
+var bitcore = require('bitcore');
+   
+$( document ).ready(function() {
+          
+    $("#getdatabutton").click(function(){
+        
+        var tx_id = $("#tx_id").val();
+        
+        get_xcp_encoded(tx_id, function(utxo_hash, data_chunk){
+            $("#arc").html(data_chunk);
+            var asset = data_chunk.substring(42, 26);
+            var amount = data_chunk.substring(58, 42);
+            var asset_dec = parseInt(asset, 16);
+            var amount_dec = parseInt(amount, 16) / 100000000;
+            $("#assetid").html(asset_dec);
+            $("#assetamt").html(amount_dec);
+    
+        });
+    });
+
+});
+    
+
+</script>
+</head>
+<body>
+    <h1 style="margin-top: 20px;">Extract XCP Asset Send Transaction Data (multi-sig encoded only)</h1>
+    <div style="margin-top: 50px;">Tx Hash</div>
+    <input type="text" id="tx_id" value="42ffc07919b1fc4a8a92ca318bf3b6fe611fd128b646c7406873cf84cece4834" label="Tx Hash" required>
+
+    <div style="margin-top: 20px;">
+    <input type="button" id="getdatabutton" value="Get XCP Data">
+    
+    
+    
+    
+    <div style="margin-top: 50px;">Hashed Data: <span id="arc"></span></div>
+    
+    <div style="margin-top: 20px;">Asset ID: <span id="assetid"></span></div>
+        
+    <div style="margin-top: 20px;">Asset Amount: <span id="assetamt"></span></div>
+
+</body>
+</html>

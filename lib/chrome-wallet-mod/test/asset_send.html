@@ -1,0 +1,95 @@
+<html>
+<head>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bitcore/bitcore.min.js"></script>
+    <script src="../js/mnemonic.js"></script>
+    <script src="../js/utxo.js"></script>
+    <script src="../js/xcp-js/transactions.js"></script>
+    <script src="../js/xcp-js/rc4.js"></script>
+    <script src="../js/xcp-js/convert-type.js"></script>
+    <script src="../js/xcp-js/decode.js"></script>
+    <script src="../js/biginteger.js"></script>
+    <script src="../js/hex2dec-cs.js"></script>
+    
+    <script src="../popup.js"></script>
+    
+<script>
+
+hex_byte();    
+    
+var bitcore = require('bitcore');
+   
+$( document ).ready(function() {
+          
+    $("#gettransbutton").click(function(){
+    
+        var mnemonic = $("#mnemonic").val();
+        
+        var add_from = $("#add_from").val();  // sending address
+        var add_to = $("#add_to").val();  // receiving address
+        
+        var asset = $("#asset").val();
+        var asset_total = $("#asset_total").val();
+        
+        var btc_total = 0.0000547;  //total btc to receiving address
+        var msig_total = 0.000078;  //total btc to multisig output (returned to sender)
+
+        var transfee = 0.0001;  //bitcoin tx fee
+        
+        var divisible = $("#divisible").val();  //is asset divisible?
+        
+//        if (isDivisible(asset) == "False") {
+//            asset_total = parseFloat(asset_total) / 100000000;
+//        }
+        
+        if (divisible == "false") {
+            asset_total = parseFloat(asset_total) / 100000000;
+        }
+        
+        console.log(asset_total);
+        
+        //sendXCP(add_from, add_to, asset, asset_total, btc_total, msig_total, transfee, mnemonic);
+        sendXCP_opreturn(add_from, add_to, asset, asset_total, btc_total, transfee, mnemonic);
+         
+    });
+
+});
+    
+
+</script>
+</head>
+<body>
+
+    
+    
+    <h1 style="margin-top: 50px;">Create XCP Asset Send - BTC Raw Transaction</h1>
+    <div>Use https://blockchain.info/pushtx to broadcast a raw transaction to the Bitcoin network</div>
+    <div style="margin-top: 30px;">Mnemonic Passphrase (12 words)</div>
+    <input type="text" id="mnemonic" value="" required>
+
+    <div style="margin-top: 20px;">Sending Address</div>
+    <input type="text" id="add_from" value="" required>
+
+    <div style="margin-top: 20px;">Receiving Address</div>
+    <input type="text" id="add_to" value="" required>
+
+    <div style="margin-top: 20px;">Asset</div>
+    <input type="text" id="asset" value="" required>
+
+    <div style="margin-top: 20px;">Send Amount</div>
+    <input type="text" id="asset_total" value="" required>
+
+    <div style="margin-top: 20px;">Divisible</div>
+    <select id="divisible"><option value="true">true</option><option value="false">false</option></select>
+    
+    
+    <div style="margin-top: 30px;">
+    <input type="button" id="gettransbutton" value="Get BTC Raw Transaction Data">
+    </div>
+    
+    <div style="margin-top: 30px; margin-bottom: 100px;" id="raw"></div>
+    
+    
+        
+</body>
+</html>

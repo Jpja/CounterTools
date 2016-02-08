@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<!--<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>-->
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+<style>
+#mainSection code {
+ background-color:LightGray;
+}
+</style>
+
+<script>
+function drawColorTable() {
+	var htmlColors = ["AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","RebeccaPurple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"];
+	var output = "<b>All CSS Color Names</b><br><br><table style=\"border-collapse:collapse;margin:0px;width: 100%;\">";
+	for(var i=0; i < htmlColors.length; i++) {
+		output += "<tr style=\"background-color:"+htmlColors[i]+";\"><td style=\"font-family:Monaco,monospace;font-weight:bold;border:1px solid black;padding:3px;font-size:90%;\">"+htmlColors[i]+"<br><span style=\"color:white;\">&nbsp;"+htmlColors[i]+"</span></td></tr>";
+	}
+	output += "</table>";
+	document.getElementById('colortable').innerHTML =  output;
+}
+function writeFees() {
+	var btcPrice = getPrice('BTC');
+	var display = "<pre>";
+	display += fixedlength("Wallet name",24)+"\""+WALLET_NAME+"\"\n";
+	display += fixedlength("Wallet title",24)+"\""+WALLET_TITLE+"\"\n";
+	display += fixedlength("Number of addresses",24)+NUM_ADDR_DISPLAY+"\n";
+	display += fixedlength("BTC transaction fee",24)+TX_FEE.toFixed(8)+" ($"+(TX_FEE*btcPrice.usd).toFixed(3)+")\n";
+	display += fixedlength("BTC to receiver",24)+TO_RECEIVER.toFixed(8)+" ($"+(TO_RECEIVER*btcPrice.usd).toFixed(3)+")\n";
+	display += fixedlength("BTC redeemable multisig",24)+MSIG_OUTPUT.toFixed(8)+" ($"+(MSIG_OUTPUT*btcPrice.usd).toFixed(3)+")</pre>";
+	document.getElementById('fees').innerHTML =  display;
+}
+</script>
+
+</head>
+<body onload="drawMenus();">
+
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div id="colortable" class="boxInfo">CounterTools is a modular JavaScript GUI wallet. It shall run locally in one's browser. It is open source and anyone is welcome to contribute to the official version or make their own fork.</div>
+<h1>Developer Guide</h1>
+
+<h2>Modules, Menu and Design</h2>
+The file <code>template.html</code> contains the basic setup. If you need additional libraries or images for your module, it is a good idea to put them in a folder with the same name as the new html file.<br><br>
+On <code>settings/menu.txt</code> you can add your module to the main menu.<br><br>
+Design specific to your module should be added to the html's <code>head</code> section. Begin each element with <code>#mainSection</code> to ensure it does not override the general design. 
+
+<h2>Passphrases, Addresses and Keys</h2>
+The passphrase is encrypted and can be decrypted only after the user submits the password.
+<pre><code>var decrypted = decryptPassword(password); //returns passphrase on success, else a number code
+if (!isNaN(decrypted)) //if passphrase decrypted ok</code></pre>
+The user can choose how many addresses to display, but to avoid error it should never be more than the (12) pre generated ones.
+<pre><code>var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);</code></pre>
+If the passphrase is decrypted you can get an unlimited amount of addresses and private keys.
+<pre><code>var addrAndKey = genAddr(passphrase,numAddr,true);
+//addrAndKey[i][0] is address i
+//addrAndKey[i][1] is private key i</code></pre>
+If the user submits a passphrase it should first be cleaned (to lower case and extra whitespaces removed) and typos can also be auto-corrected.
+<pre><code>var ppClean = cleanPPformat(ppInput);
+var ppRepaired = repairPP(ppClean);
+var output = highlightDiffWords(ppRepaired, ppClean);</code></pre>
+If the passphrase has been repaired (i.e. the repaired and clean pp's are not identical) then the user should know. The typo may be such that auto-correct suggests the wrong word from the 1626 word passphrase dictionary. If it cannot find any word at all it returns '???'. You should always check that a passphrase is valid.
+<pre><code>if (isValidPP(passphrase))</code></pre>
+
+<h2>Assets</h2>
+To check whether an asset name is valid:
+<pre><code>if (isValidAsset(asset))</code></pre>
+This works for both alphabetic and numeric assets. The file <code>asset-list.txt</code> contains the <code>ASSET_LIST</code> array. It contains almost all assets but needs to be manually updated. Therefore be considerate of when to use it and when to use an API call (see below).<br><br>
+Numeric assets are not human-readable. A workaround is:
+<pre><code>var display = assetReadable(asset);
+assetReadable('A8285897447728690705'); //returns 'A828..05 (Test ..)'
+assetReadable('A4379279758903518173'); //returns 'A437..73 ⚓ (PLATINUM)'
+assetReadable('A1152921504606846976'); //returns 'A1152921504606846976'
+assetReadable('FLDC'); //returns 'FLDC' </code></pre>
+For numeric assets it shows the description (if any). For alphabetic assets it simply returns the name. A special kind of numeric asset is <b>anchored asset</b>. The number is a hash of the description. When you see '⚓ (PLATINUM)' you can be certain that this is the only <i>anchored</i> asset with description 'platinum' (case insensitive). To go from a description to anchored asset, call this function:
+<pre><code>var anchoredAsset = numericAssetFromDescription(asset_description);</code></pre>
+
+<h2>Transactions</h2>
+The following transactions are currently supported:
+<pre><code>sendBTC(fromAddress, toAddress, amount, TX_FEE, passphrase, feedbackDivID);
+sendXCP_opreturn(fromAddress, toAddress, asset, amount, TO_RECEIVER, TX_FEE, passphrase, feedbackDivID);
+sendBroadcast(fromAddress, bcmessage, bcvalue, bcfeefraction, MSIG_OUTPUT, TX_FEE, passphrase, feedbackDivID);
+createIssuance(fromAddress, asset, quantity, divisible, descr, MSIG_OUTPUT, TX_FEE, passphrase, feedbackDivID);</code></pre>
+The capitalized parameters are initialized from settings, so you will normally leave them as is. The passphrase is explained above. The feedbackDivID is the div where progress is displayed in the GUI.<br><br>
+All transactions are signed within the browser. The APIs only collect UTXOs and push the finalized transaction. It uses the Bitpay API with Blockchain.info as backup.<br><br>
+The broadcast text is maximum 32 character, ASCII only  
+
+<h2>APIs</h2>
+The file <code>lib/xcp-toolbox/api.js</code> contains APIs for address and asset info. Be aware that an API call blocks the code execution for up to a second.<br><br>
+To get an address' balance use the following code:
+<pre><code>var btcBalance = getBtcBalance(address);
+var xcpBalance = getXcpBalance(address);
+var assetBalances = getAssetBalances(address);</code></pre>
+The BTC and XCP balances are decimal numbers or '?' if APIs fail. <code>getAssetBalances()</code> returns string 'none' if no assets held, or '?' if APIs fail. Otherwise it returns an array where <code>assetBalances[i].asset</code> is asset i's name and <code>assetBalances[i].balance</code> is its balance.<br><br>
+To get an asset price use <code>var prices = getPrice(asset);</code>. The asset can be 'BTC', 'XCP' or any asset listed on Coinmarketcap. To get price in usd, use <code>prices.usd</code>.<br><br>
+To get asset info use <code>var assetInfo = getAssetInfo(asset);</code>. It returns values 'name' (shall be the same as the asset), 'issuer', 'owner', 'divisible', 'locked', 'supply', and 'description'. Thus use <code>assetInfo.owner</code> to get the owner address.
+
+<h2>Number Display</h2>
+Numbers above 10,000 usually have every three digits separated with a comma. For the decimals, however, there is no standard display. You need to improvise and these are some heuristics:
+<ul>
+ <li>Color decimals in DimGray.</li>
+ <li>Display either 2, 3, 6 or 8 decimals.</li>
+ <li>Always use the same amount of decimals.</li>
+ <li>Reduce the font size for every three decimals. This makes is easier to view milli- and micro-values.</li>
+ <li>In tables, use a monospace font (e.g. font-family: "Andale Mono", monospace;).</li>
+</ul>
+
+<br>&nbsp;<br>
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

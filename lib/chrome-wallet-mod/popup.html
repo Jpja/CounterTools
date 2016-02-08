@@ -1,0 +1,638 @@
+<!doctype html>
+
+<html>
+<head>
+	
+<title></title>
+    
+         
+    <script src="js/jquery.min.js"></script>
+    <script type="text/javascript" language="Javascript" src="js/bootstrap.min.js"></script>
+    <script src="js/apiserver.js"></script>
+    
+    <script src="js/aes.js"></script>
+    <script src="js/biginteger.js"></script>
+    <script src="js/utxo.js"></script>
+    
+    <script src="js/xcp-js/transactions.js"></script>
+    <script src="js/xcp-js/rc4.js"></script>
+    <script src="js/xcp-js/convert-type.js"></script>
+    <script src="js/xcp-js/decode.js"></script>
+    <script src="popup.js"></script>
+
+    
+    <!-- from Countersign-->
+    <script src="js/mnemonic.js"></script>
+    <script src="js/bitcore/bitcore.min.js"></script>
+    <script src="js/bitcoinsig.js"></script>
+    <script src="js/brainlite.js"></script>
+    <script src="js/bitcoinjs-min.js"></script>
+    <script src="js/qrcode.min.js"></script>
+    
+
+<!--
+    <script src="js/webtorrent/webtorrent.min.js"></script>
+    <script src="js/webtorrent/bvam-p2p.js"></script>
+-->
+    
+    
+    
+    <script src="ticker.js"></script> 
+    
+<!--    <script src="js/timevault.js"></script>-->
+    
+<!--    <link rel="stylesheet" href="glidera.css">-->
+
+    <link rel="stylesheet" type="text/css" href="bootstrap.min.css" />
+    
+    <link rel="stylesheet" type="text/css" href="main.css" />
+    <link rel="stylesheet" type="text/css" href="font-awesome/css/font-awesome.min.css" />
+    <link href='https://fonts.googleapis.com/css?family=PT+Mono' rel='stylesheet' type='text/css'>
+    
+    
+</head>
+<body>	
+   
+    
+    
+    
+    <div class="bg">
+        
+               <div id="welcomesplash" style="display: none;">         
+<!--
+            <form>
+            <p class="lead">Enter Password:</p>
+            <div style="width: 100%; padding: 10px 0 30px 0;"><input type="password" style="text-align: center;" class="form-control" id="inputPin"></div>
+            <div align="center"><button id="pinButton" type="submit" class="btn btn-primary">Open Wallet</button></div>
+            
+            </form>
+-->
+           
+            <div align="center" style="padding: 50px 0 35px 0;"><img src="images/icon-128.png"></div>
+        <div id="initialsplash">
+            <p>XCP Wallet is an open source digital token wallet powered by the Bitcoin Network and Counterparty protocol</p>
+                
+            
+            <p>Source code is available on Github at<br> <span style="font-weight: bold; font-size: 12px;">https://github.com/loon3/XCP-Wallet</span></p>
+            <div align="center" style="padding-top: 25px;">
+                <button id="setupWalletButton" class="btn btn-lg btn-info">Create a Wallet</button>
+            </div>
+            </div>
+            
+            <div id="walletquestion" style="padding: 40px 0 0 0; display: none;">
+                <p class="lead">Do you already have a Counterwallet passphrase?</p>
+                <div class="row">
+                    <div class="col-xs-6">
+                
+                        <button id="yesExistingWallet" class="btn btn-success btn-block" style="width: 100%;">Yes</button>
+                    
+                    </div>
+                    <div class="col-xs-6">
+                
+                        <button id="noExistingWallet" class="btn btn-info btn-block" style="width: 100%;">No</button>
+                    
+                    </div>
+                
+                </div>
+            
+            </div>
+            
+            <div id="walletyes" style="padding: 20px 0 0 0; display: none;">
+            
+                <form>
+            <p class="lead">Enter Passphrase:</p>
+            <div style="width: 100%; padding: 0px 0 10px 0;"><input type="password" style="text-align: center;" class="form-control" id="inputSplashPassphrase">
+                    </div>
+                    <div style="width: 135px; margin: 0 auto; ">
+                        <button id="hideshowpass" class="btn btn-xs btn-default">Show Passphrase</button>
+                    </div>
+            <div align="center" style="padding-top: 20px;"><button id="setpassphraseatsplash" type="submit" class="btn btn-success">Go</button></div>
+            
+            </form>
+            
+            </div>
+            
+            <div id="walletno" style="margin: 0 0 0 0; display: none;">
+            
+                <form>
+            <p>Write down the 12-word passphrase below.</p>
+            <div class="small" style="padding-bottom: 10px; margin-top: -5px;">This is your private key!  Put it in a safe place!</div>
+            <div id="yournewpassphrase" style="width: 100%; padding: 10px 5px 10px 5px; font-size: 15px; color: #000; background-color: #fff; font-weight: bold;"></div>
+            
+            <div align="center" style="width: 100%; padding: 15px 0 0 0;"><button id="writeDownButton" type="submit" class="btn btn-default">Continue...</button></div>
+            
+            </form>
+            
+            </div>
+            
+            <div id="encryptquestion" style="padding: 40px 0 0 0; display: none;">
+
+                <p class="lead">Do you want to encrypt your wallet with a password?</p>
+                <div class="row">
+                    <div class="col-xs-6">
+                
+                        <button id="yesEncryptButton" class="btn btn-success btn-block" style="width: 100%;">Yes!</button>
+                    
+                    </div>
+                    <div class="col-xs-6">
+                
+                        <button id="noEncryptButton" class="btn btn-info btn-block" style="width: 100%;">Not Now</button>
+                    
+                    </div>
+                
+                </div>
+            
+            </div>
+            
+            <div id="encryptyes" style="padding: 20px 0 0 0; display: none;">
+            
+                <form>
+            <p class="lead">Enter Password:</p>
+            <div style="width: 100%; padding: 10px 0 30px 0;"><input type="password" style="text-align: center;" class="form-control" id="inputSplashPass"></div>
+            <div align="center"><button id="setpinatsplash" type="submit" class="btn btn-default">Set Password</button></div>
+            
+            </form>
+            
+            </div>
+            
+        </div>
+        
+        <div id="pinsplash" style="background-color: #000;">         
+            <form>
+            <div style="padding: 20px; background-color: rgba(0, 0, 0, 0.7); margin-top: 20px;">
+            <p class="lead" style="color: #fff;">Enter Password:</p>
+            <div style="width: 100%; padding: 5px 0 25px 0;"><input type="password" style="text-align: center;" class="form-control" id="inputPin"></div>
+            <div align="center"><button id="pinButton" type="submit" class="btn btn-primary">Open Wallet</button></div>
+            </div>
+            </form>
+            <!--<div align="center" style="margin-top: 80px;"><button id="pinButton" class="btn btn-xs btn-danger resetAddress">Reset Wallet Passphrase</button></div>-->
+        </div>
+       
+       
+        <div class="currenttoken" style="display: none;">BTC</div>
+        <div id="btcbalhide" style="display: none;">0</div>
+        <div id="assetbalhide" style="display: none;">0</div>
+        <div class="unconfirmedbal" style="display: none;"></div>
+        <div id="isdivisible" style="display: none;">yes</div>
+        <div id="isbtcloading" style="display: none;">true</div>
+        
+        
+	   <div role="tabpanel">
+           
+<!--          
+<div style="top: 0px; right: 6px; position: fixed; cursor: pointer; color: #39f388; font-weight: bold; font-size: 20px;" id="close_tutorial_splash">Close X</div>
+-->
+           
+        <div id="tutorial_splash" style="display: none;">
+            <div id="tutorial_splash_bg"></div>
+            <div id="tutorial_splash_img">
+                <img src="images/tutorial_splash.png">
+            </div>  
+        </div>
+  <!-- Nav tabs -->
+
+    <div id="navigation" style="display: none;">       
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container" style="background-color: #444;">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+         
+            <div id="navbar-id" class="navbar-brand" style="margin: -5px; cursor: default;" href="#infoPage" data-toggle="tab"><div style="display: inline-block; padding-right: 5px;"><img src="/images/xcp-icon.png" height="32px"></div><div style="display: inline-block; font-weight: bold; font-size: 16px; color: #fff;">XCP <span style="color: #EB134E;">Wallet</span></div></div>
+       
+        </div>        
+           
+           
+ <div id="navbar" class="navbar-collapse collapse">          
+           
+<!--  <ul class="nav nav-tabs" id="allTabs">-->
+     <ul class="nav navbar-nav" id="allTabs"> 
+      
+    <li class="active" id="walletTab"><a id="walletLink" href="#walletPage" class="collapsenav" data-toggle="tab" style="font-weight: bold; font-size: 16px; text-align: center;">SEND / RECEIVE</a></li>
+    <li id="inventoryTab"><a href="#inventoryPage" class="collapsenav" data-toggle="tab" style="font-weight: bold; font-size: 16px;  text-align: center;">ASSET INVENTORY</a></li>
+          <li id="transactionTab"><a href="#transactionPage" class="collapsenav" data-toggle="tab" style="font-weight: bold; font-size: 16px;  text-align: center;">TRANSACTION HISTORY</a></li>
+
+    
+    <li id="toolsTab"><a href="#toolsPage" class="collapsenav" data-toggle="tab" style="font-weight: bold; font-size: 16px;  text-align: center;">TOOLS</a></li>
+    <li id="settingsTab"><a href="#settingsPage" class="collapsenav" data-toggle="tab" style="font-weight: bold; font-size: 16px; text-align: center;">SETTINGS</a></li>  
+<!--               <li id="infoTab"><a href="#infoPage" class="collapsenav" data-toggle="tab" style="font-weight: bold; font-size: 16px;  text-align: center;">ABOUT</a></li>-->
+    <!--<li id="buysellTab" style="margin-left: 12px;">
+        
+        <a href="#shapeshiftPage" data-toggle="tab">
+            
+            <div id="priceBoxBank" style="display:none;">
+                <img src="images/bank-icon.png" height="24px" width="24px">
+            </div>
+        </a>
+    </li>-->
+            <div id="priceBox" style="display: none;">
+            
+                <div id="ltbPrice" style="display: none;"></div><div id="ltbPriceFlipped">...</div>
+                <div id="priceSrc">USD/BTC</div>
+                
+            </div>
+</ul>
+             </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+        </div>
+
+  <!-- Tab panes -->
+  <div class="tab-content" style="margin-top: 70px;">
+    <div class="tab-pane active" id="walletPage">
+        
+        
+        
+        <div id="balanceBox" class="innershadow">
+			
+            <div id="mainDisplay">
+                <span id="xcpbalance"><div style='padding: 6px;'><i class='fa fa-cog fa-spin fa-2x'></i></div></span>
+            </div>
+            
+<!--
+            <div class="dropdown" align="center" style="margin: 0 auto 0 auto;">
+              <button class="btn btn-xs dropdown-toggle btn-default" style="border: none; width: 240px; background-color: #fafafa;" type="button" data-toggle="dropdown" aria-expanded="true">
+                <div id='currenttoken' class="currentprimarytoken" style="font-size: 22px; font-weight: bold;">LTBCOIN</div>
+              </button>
+              <ul class="primarytokenselect dropdown-menu scrollable-menu" style="width: 240px;" role="menu">
+                 <li><a href="#" class="primarytokenoption">LTBCOIN</a></li>   
+                 <li><a href="#" class="primarytokenoption">BTC</a></li>  
+              </ul>
+            </div>
+-->
+            
+            <div id="freezeUnconfirmed">
+                <div id="txsendstatus">Balance will update after one confirmation</div>
+                <div style='padding-top: 6px;' id="yourtxid" class="lead"></div>
+		    </div>
+		</div>
+        
+        <div align="center">
+            <div id="fiatvaluebox" style="margin-top: 6px;">($<div style="display: inline-block;" id="xcpfiatValue"></div>)</div>
+            <div id="switchtoxcp">Switch to BTC</div>
+        </div>
+        
+        
+    
+        
+		<div id="addressBox">           
+            <div id="xcpaddressTitle">Your Wallet Address <div style="display: inline-block; margin-left: 4px;" id="copyButton"><i class="fa fa-clipboard"></i></div><div style="display: inline-block; margin-left: 4px;" id="newLabelButton"><i class="fa fa-tag"></i></div></div>
+            <div id="addresscopied">Address Copied to Clipboard!</div>
+			<div id="xcpaddress"></div>
+		</div>
+        
+        
+           
+        <div id="pocketdropdown" align="center" style="width: 300px;">
+            <select id="walletaddresses" name="walletaddresses" class="addressselect form-control"></select>
+        </div>
+        
+        
+        
+        
+            
+
+     
+                     
+<!--
+            var assetbalance = $("#xcpbalance").html();
+            var currenttoken = $(".currenttoken").html();
+-->
+        
+        
+        
+        
+        
+        <div id="addresslabeledit" align="center" style="width: 300px; display: none;">
+            <div class="row" style="padding: 0 0 0 10px; margin: 0px 0 0px 0;">
+                    <div class="col-xs-9" style="margin-right: -20px">
+                        <div style="width: 100%;"><input type="text" style="text-align: center" class="form-control" id="newPocketLabel" placeholder="Enter new label" maxlength="25"></div>
+                    </div>
+                    <div class="col-xs-3">
+                        <button id="saveLabelButton" class="btn btn-default btn-block" style="width: 62px;">Save</button>
+                    </div>
+                </div>
+        </div>
+        
+        
+        <div id="transTools">
+        <div class="row">
+            <div class="col-xs-6">
+                <button type="button" class="btn btn-success btn-sm btn-block" id="sendAssetButton" style="font-size: 14px; font-weight: bold; ">SEND</button>
+            </div>
+            <div class="col-xs-6">
+                <button type="button" class="btn btn-primary btn-sm btn-block" id="depositBTC" style="font-size: 14px; font-weight: bold; ">RECEIVE</button>
+            </div>
+        </div>
+        </div>
+            
+		
+        <div id="btcbalbox" class="whitebox">
+            <div id="btcbalance"><div style='font-size: 12px;'>Thinking...</div></div>
+        </div>  
+
+        
+        <div id="btcsendbox" style="margin: 0 5px 10px 5px;">
+        
+        
+        <div style="padding: 0 5px 0 5px;">
+            
+            <div align="left" class="inputtitle" style="padding: 10px 0 2px 0;">RECEIVING ADDRESS:</div>
+<!--            <div style="display: inline-block;" class="sendlabel"></div>-->
+        <div align="center" style="width: 100%; margin: auto;"><input type="text" class="form-control" id="sendtoaddress" style="border: 1px solid #000; text-align: left;"></div>
+            
+            <div align="left" class="inputtitle" style="padding: 12px 0 2px 0;">AMOUNT TO SEND:<div id="sendUSD" style="display: inline-block; padding-left: 10px;"></div></div>
+            
+
+            
+            <div align="center" style="width: 100%; margin: auto;"><input type="text" class="form-control" id="sendtoamount" style="border: 1px solid #000; text-align: left;"></div>
+            
+            
+            
+        
+            
+            
+            
+        <div align="center"><button id="sendtokenbutton" class="btn btn-success btn-block btn-sm" style="margin-top: 15px; font-size: 14px; font-weight: bold; border: 1px solid #000;">SEND <span class="currenttoken">BTC</span></button></div>
+        </div>
+        </div>
+        
+        
+        
+    </div>
+    <div class="tab-pane" id="transactionPage">
+<!--        <div style="padding: 10px;"><button id="assettransactiontoggle" class="btn btn-default btn-block btn-sm" style="width: 100%;">View Token Transaction History</button></div>-->
+		
+        
+        
+        <div id="alltransactions" style="margin-top: 0px; padding-bottom: 20px;"></div>
+        
+        
+        
+        <!--<div id="hiddentokens"></div>
+        <div style="padding: 10px 0 40px 0;"><button id="hiddentokentoggle" class="btn btn-default btn-block btn-sm" style="width: 100%;">View Hidden Tokens</button></div>-->
+    </div>
+      <div class="tab-pane" id="inventoryPage">
+<!--        <div style="padding: 10px;"><button id="assettransactiontoggle" class="btn btn-default btn-block btn-sm" style="width: 100%;">View Token Transaction History</button></div>-->
+		
+        
+          
+        <div id="allassets" style="padding-bottom: 20px;"></div>
+        
+        
+        
+        
+        <!--<div id="hiddentokens"></div>
+        <div style="padding: 10px 0 40px 0;"><button id="hiddentokentoggle" class="btn btn-default btn-block btn-sm" style="width: 100%;">View Hidden Tokens</button></div>-->
+    </div>
+    <div class="tab-pane" id="toolsPage">
+        <div class="row applink" style="padding: 0 0 30px 0; width: 300px; margin: auto;">
+            
+
+            
+<!--
+            <a id="ExchangeRateApp" href="#ExchangeRatePage" data-toggle="tab">
+             <div class="col-xs-4 toolicon activetool" align="center"> 
+                <img src="exchange-rates-icon.png" height="48" width="48">
+                <div class="small" style="padding: 5px;">Exchange Rates</div>
+            </div>
+                </a>
+-->
+                
+             <a id="SignTool" href="#signPage" data-toggle="tab">
+             <div class="col-xs-4 toolicon activetool" align="center"> 
+                <<i class="fa fa-pencil fa-3x"></i>
+                <div class="small" style="padding: 10px 5px 5px 5px;">Sign Message</div>
+            </div>
+                </a>
+            
+             <a id="BroadcastTool" href="#broadcastPage" data-toggle="tab">
+             <div class="col-xs-4 toolicon activetool" align="center"> 
+                <i class="fa fa-bullhorn fa-3x"></i>
+                <div class="small" style="padding: 10px 5px 5px 5px;">Broadcast</div>
+            </div>
+                </a>
+            
+            <a id="IssueTool" href="#issuePage" data-toggle="tab">
+             <div class="col-xs-4 toolicon comingsoon" align="center"> 
+                <i class="fa fa-university fa-3x"></i>
+                <div class="small" style="padding: 10px 5px 5px 5px;">Issue Asset</div>
+            </div>
+                </a>
+            
+             <a id="DEXTool" href="#dexPage" data-toggle="tab">
+             <div class="col-xs-4 toolicon comingsoon" align="center"> 
+                <i class="fa fa-exchange fa-3x"></i>
+                <div class="small" style="padding: 10px 5px 5px 5px;">Decentralized Exchange</div>
+            </div>
+                </a>
+            
+    
+             
+            
+          
+                
+                
+         
+                
+        </div>
+      
+    </div>
+      
+  
+      <div class="tab-pane" id="ExchangeRatePage">
+            
+           
+            <div id="ExchangeRate" style="padding: 4px; text-align: center; color: #fff;">
+            
+            
+            
+            </div>
+             
+      </div>
+        
+    
+    <div class="tab-pane" id="broadcastPage">
+      
+             <div id="broadcastbox">
+                 
+                 <h6 align="center" style="margin: 10px auto 30px auto;">Cost per broadcast is 0.000178 BTC</h6>
+                               
+                <div class="row" style="width: 100%; margin: auto;"> 
+                    
+                    <div class="col-xs-12 nopadding">
+                        
+                        <div style="margin-left: 0px;">Broadcast Text:</div>
+                        <div align="center" style="width: 100%; margin: 0 0 10px 0;"><input type="text" class="form-control" id="broadcastmessage" maxlength="32"></div>
+                        
+                    </div>
+                    
+                </div>
+
+                <div class="row" style="width: 100%; margin: auto;">
+                    <div class="col-xs-6 nopadding">
+                        <div style="margin-left: 0px;">Value:</div>
+                        <div align="center" style="width: 100%; margin: 0 0 10px 0;"><input type="text" class="form-control" id="broadcastvalue" value="-1"></div>
+                    </div>
+                    <div class="col-xs-6 nopadding">
+                        <div style="margin-left: 0px;">Fee Fraction:</div>
+                        <div align="center" style="width: 100%; margin: 0 0 10px 0;"><input type="text" class="form-control" id="broadcastfeefraction" value="0"></div>
+                    </div>
+                </div>
+
+                <div style="padding: 20px 20px 40px 20px;">
+
+                <div align="center"><button id="sendbroadcastbutton" class="btn btn-warning" disabled>Send Broadcast</div>
+                </div>
+            </div>
+    </div>
+      
+     
+      
+      <div class="tab-pane" id="signPage">
+    
+        <div id="preSign">
+		<div align="center" class="lead" style="margin: 30px 0 20px 0;padding: 10px 0 0 0;">Select Address to Sign Message</div>  
+        <div align="center" style="width: 300px;">
+            <select id="signPubAddress" class="addressselectnoadd form-control" style="font-size: 12px;"></select>
+        </div>
+        <div style="width: 100%; padding: 0 20px 0 20px; margin: 20px 0 10px 0;"><input type="text" class="form-control" id="messagetosign" placeholder="Type your message here..."></div>
+        <div align="center" style="width: 100%; padding: 10px 5px 20px 5px; margin: auto;" class="row">
+            
+           <div class="col-xs-6"> 
+            <button class="btn btn-primary btn-block signMessageButton">Sign</button>
+            </div>
+            
+            <div class="col-xs-6"> 
+            <button class="btn btn-danger btn-block signMessageButton copy">Sign & Copy</button>
+            </div>
+            
+        </div>
+        </div>
+        
+        <div id="postSign" style="margin: 30px 0 15px 0; display: none; font-size: 11px;">        
+        </div>
+        
+        <div id="resetsignbox" style="display: none; margin: 0 0 30px 0;"><button id="resetSignButton" class="btn btn-primary btn-block">Reset</button></div>
+    </div>
+      
+      
+      
+    <div class="tab-pane" id="settingsPage">
+
+		<div style="margin-top: 15px;">
+			
+			<a href="#" id="revealPassphrase" class="btn btn-primary btn-block keybutton">Reveal Passphrase</a>
+            <div id="passphrasebox" style="display: none;">
+                <div id="newpassphrase">your passphrase</div>
+            </div>
+            <a href="#" id="manualPassphrase" class="btn btn-primary btn-block keybutton">Enter Passphrase Manually</a>
+            <div id="manualPassBox" style="display: none; margin-bottom: 10px;">
+                    
+                    
+                <div class="row" style="padding: 0 10px 0 3px; ">
+                    
+                    <div class="col-xs-2" style="margin-top: 6px;">
+                        <button id="hideshowpassSettings" class="btn btn-xs btn-default">Show</button>
+                    </div>
+                    
+                    <div class="col-xs-8">
+                        <div style="width: 100%;"><input type="password" class="form-control" style="font-size: 12px;" id="manualMnemonic" placeholder="Enter 12-word passphrase"></div>
+                    </div>
+                    
+                    <div class="col-xs-2" style="margin-left: -15px;">
+                        <button id="manualAddressButton" class="btn btn-default btn-success">Go</button>
+                    </div>
+                </div>
+            </div>
+             
+            
+            <div class="hideEncrypted">
+            <a href="#" id="encryptPassphrase" class="btn btn-primary btn-block keybutton">Encrypt Wallet</a>
+            <div id="encryptPassphraseBox" style="display: none; margin-bottom: 10px;">
+                    
+                    
+                <div class="row" style="padding: 0 10px 0 10px;">
+                    <div class="col-xs-9">
+                        <div style="width: 100%;"><input type="password" class="form-control" id="encryptPassword" placeholder="Enter new password"></div>
+                    </div>
+                    <div class="col-xs-3">
+                        <button id="encryptPasswordButton" class="btn btn-success btn-block" style="width: 100%;">Go</button>
+                    </div>
+                </div>
+            </div>
+            </div>
+            
+             <a href="#" id="AddressesAndLabels" style="margin-bottom: 10px;" class="btn btn-primary btn-block keybutton">Addresses and Labels</a>
+            <div id="AddressesAndLabelsOptions" class="row" style="display: none;">
+                <div class="col-xs-4" style="margin: 0 -10px 0 20px;">
+                  <a id="importAddresses" href="#" style="margin-bottom: 10px;" class="btn btn-info btn-block keybutton">Import</a> 
+             </div>
+                <div class="col-xs-4" style="margin: 0 -10px 0 -10px;">
+            
+            <a href="#" id="exportAddresses" style="margin-bottom: 10px;" class="btn btn-info btn-block keybutton addlabbuttons">Export</a> 
+            </div>
+                <div class="col-xs-4" style="margin: 0 -10px 0 -10px;">
+                  <a href="#" style="margin-bottom: 10px;" class="btn btn-info btn-block keybutton resetFive addlabbuttons">Reset</a> 
+             </div>
+                
+                <div id="hiddenaddlab" style="display: none; width: 250px; margin: 20px auto 10px auto; text-align: center; font-style: italic;">Note: Please ensure that there is a valid web page in the current tab.</div>
+                
+                 </div>
+            
+            <a href="#" style="margin-bottom: 10px;" class="btn btn-primary btn-block keybutton" id="chainsobutton"><span id="turnoffchainso"></span></a> 
+            
+            <!--<a href="#" style="margin-bottom: 10px;" class="btn btn-primary btn-block keybutton" id="bvamwtbutton"><span id="bvamwttoggle"></span></a> -->
+            
+            <div style="color: #F28F8D; padding: 20px 10px 10px 10px;"><div style="font-weight: bold; text-decoration: underline;">WARNING:</div><div>Be sure to save your 12-word passphrase before selecting the Reset Passphrase button below! Your current passphrase will not be recoverable.</div></div>
+            
+                  <a href="#" style="margin-bottom: 15px;" class="btn btn-danger btn-block keybutton resetAddress">Reset Passphrase</a> 
+            
+            
+                    
+                </div>
+                
+
+		</div>
+        
+      
+		
+        <div class="tab-pane" id="infoPage">
+            <div style="padding: 20px; text-align: center;">
+                
+                <p><img src="images/icon-128.png"></p>
+                <h3>XCP Wallet</h3>
+                <p style="padding-top: 10px;">Powered by APIs from Blockr.io, Insight.is, Chain.so, and Counterpartychain.io</p>
+                <p>Source code is available on Github at<br> <span style="font-weight: bold; font-size: 12px;">https://github.com/loon3/XCP-Wallet</span></p>
+                <p>Please report any bugs or issues to the Issues section of the Github repository</p> 
+                
+                <p>
+                <span style="font-decoration: underline;">Donation Address:</span><br>
+                <span style="font-weight: bold; font-size: 13px;" class="movetosend">17dkGdRKxF3RC9Vb36RZCYjYPfbx9GAiW4</span>
+                </p>
+            
+            </div> 
+            
+        
+        </div>
+      
+      
+	</div>  
+      
+    
+    
+  </div>
+
+ <div id="footer"><div id="nameversion" style="float: left; padding:1px 0 0 8px;"></div><img id="refreshWallet" src="refresh.png" height="16" width="16"></div>       
+        
+</div>
+
+
+
+</body>
+</html>
+

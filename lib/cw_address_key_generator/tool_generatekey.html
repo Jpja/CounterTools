@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Blockscan :: Address/Key Regeneration Tool for your Counterwallet Passphrase</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <link rel="stylesheet" href="assets/plugins/bootstrap/css/bootstrap.min.css">
+    <script src="jss/mnemonic.js"></script>
+    <script src="jss/bitcore/bitcore.min.js"></script>
+    <script type="text/javascript" src="jss/jquery-1.11.1.min.js"></script>
+    <script type="text/javascript" src="jss/qrcode.min.js"></script>
+    <script type="text/javascript" src="jss/bitcoinjs.min.js"></script>
+    <style>
+        img.menu_links {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container" style="width: 830px; margin-left: auto; margin-right: auto;">
+        <div class="row">
+            <br />
+            <div class="col-sm-7">
+                <h4 style="margin-left:0px">
+                    Counterwallet Address/Keys Generation Tool
+                    <br /><small>Using Your 12 Words Passphrase</small>
+                </h4>
+            </div>
+            <div class="col-sm-5">
+                <div class=" pull-right" style="text-align: right">
+                    <a href="/" title="Powered By Blockscan">
+                        <img id="Img1" src="images/logo.png" alt="Logo" style="margin-top: -0px;  margin-top: 5px" width="228" />
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <hr  />
+        <div class="col-sm-12">
+            <div class="alert alert-info" role="alert" style="margin-left:-15px;margin-right:-15px">All addresses / privatekeys are generated clientside (in-browser) using Javascript for security purposes. This page can also be run in offline/disconnected mode.</div>
+        </div>
+        <div id="login">
+            
+
+            <form class="form-horizontal">
+                <div class="form-group">
+                    <label for="input1" class="col-sm-2 control-label">Passphrase</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="input1" placeholder=" Enter your 12 word counterwallet passphrase" style="width: 100%;" title=" Enter your 12 word counterwallet passphrase here" >
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-sm-2 control-label">Address Count</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" id="num_of_address" placeholder=" Number of address(es) to generate" value="3" title="Enter the number of addresses/keys you wish to generate" style="width: 50px;" maxlength="2" >
+                    </div>
+                </div>
+                <div class="form-group form-inline">
+                    <label class="col-sm-2 control-label">Options</label>
+                    <div class="col-sm-10">
+                        <div class="checkbox ">
+                            <label>
+                                <input type="checkbox" id="showkeys" checked value="2">
+                                Show Corresponding Private Keys
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        &nbsp; <span id="spinwheel" style="display: none "> <img src="images/ajax-loader.gif" sizes="1" /> </span>
+                    </div>
+                    <center>
+                        <button type="button" class="btn btn-default" onclick="myFunction2();">Login</button>
+                    </center>
+                </div>                
+            </form>
+        </div>      
+
+        <div id="addresstable">           
+            <div class="row">                
+                <table id="myTable" class="table table-striped"></table>                                                 
+            </div> 
+            <center>
+                <button type="button" class="btn btn-default" onclick="window.location.assign('tool_generatekey')">Logout</button>
+                
+            </center>
+        </div>
+
+        <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel" aria-hidden="true" id="myModal">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button aria-hidden="true" data-dismiss="modal" class="close" type="button">
+                            ×
+                        </button>
+                        <center>
+                            <small class="modal-title " id="myLargeModalLabel">
+                                Address
+                            </small>
+                        </center>
+                    </div>
+                    <div class="modal-body">
+                        <center><span id="qrcode"></span></center>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="myModal2" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title2" id="myModalLabel">Sign Message</h4>
+                    </div>
+                    <div class="modal-body">
+                        <label for="signaddress" class="">Address</label>
+                        <input class="form-control" id="signaddress" placeholder="Address" value="" readonly>
+                        <br />
+                        <label for="signprivatekey" class="">PrivateKey</label>
+                        <input class="form-control" id="signprivatekey" placeholder="PrivateKey" value="" readonly>
+                        <br />
+                        <label for="messagetosign" class="">Enter Your Message To Sign Here</label>
+                        <input class="form-control" id="messagetosign" placeholder="Unsigned Message" value="" >
+                        <hr />                        
+                        <label for="signedmessage" class="">Signed Message</label>
+                        <input class="form-control" id="signedmessage" placeholder="" value="">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" onclick="signmessage();">Sign With Private Key</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <script type="text/javascript">
+
+            $("#addresstable").hide();
+
+            var bitcore = require('bitcore');
+
+            function myFunction() {
+                var $btn = $("#spinwheel");
+                $btn.show();
+                setTimeout(function () {
+                    m = new Mnemonic(128);
+                    m.toWords();
+                    
+                    var str = m.toWords().toString();
+                    var res = str.replace(/,/gi, " ");
+                    var phraseList = res;
+                    $('#input1').val(phraseList);
+                    var HDPrivateKey = bitcore.HDPrivateKey.fromSeed(m.toHex(), bitcore.Networks.livenet);
+                    var derived = HDPrivateKey.derive("m/0'/0/" + "0");
+                    var address1 = new bitcore.Address(derived.publicKey, bitcore.Networks.livenet);
+                    $("#spinwheel").hide();
+                }, 200);
+            }
+
+            function myFunction2() {
+
+                var isValid = false;
+                var string = $('#input1').val().trim().toLowerCase();
+                string = string.replace(/\s{2,}/g, ' ');
+                var array = string.split(" ");
+
+                var listOfWordsArray = Mnemonic.words.toString().split(',');
+
+                listOfWordsArray = listOfWordsArray.toString();
+                for (var i = 0; i < array.length; i++) {
+                    if (listOfWordsArray.indexOf(array[i]) > -1) {
+                        //
+                    } else {
+                        isValid = true;
+                    }
+                }
+
+                var x = $('#num_of_address').val();
+
+                if (array.length != 12) {
+                    alert('Incorrect Passphrase used (It should be exactly 12 words. No more, no less)');
+                    $("#input1").focus();
+                } else if (isValid == true) {
+                    alert('Invalid Passphrase entered');
+                    $("#input1").focus();
+                } else if (isNaN(x)) {
+                    alert("Must input numbers");
+                    $('#num_of_address').focus();
+                    return false;
+                } else {
+                    if (x < 1 || x > 99) {
+                        $('#num_of_address').val(1);
+                    }
+                    var $btn = $("#spinwheel");
+                    $btn.show();
+                    setTimeout(function () {
+
+                        var blnshowaddress = true;
+                        var blnshowkeys = $('#showkeys').prop('checked');
+
+                        m2 = new Mnemonic(array);
+
+                        var HDPrivateKey = bitcore.HDPrivateKey.fromSeed(m2.toHex(), bitcore.Networks.livenet);
+                        var intcountaddr = $('#num_of_address').val();
+
+                        var table = document.getElementById("myTable");
+                        table.innerHTML = "";
+                        var row = table.insertRow(0);
+                        var cell0 = row.insertCell(0);
+                        var cell1 = row.insertCell(1);
+                        var cell2 = row.insertCell(2);
+                        var cell3 = row.insertCell(3);
+                        cell1.innerHTML = "<b>Address</b>";
+                        cell1.className = "active"
+                        cell2.innerHTML = "<b>Private Key</b>";
+                        cell2.className = "warning"
+                        cell3.innerHTML = "<b>Sign</b>";
+                        cell3.className = "active"
+
+                        var derivedArray = [];
+                        for (var i = 0; i < intcountaddr; i++) {
+                            var derived = HDPrivateKey.derive("m/0'/0/" + i);
+                            var address1 = new bitcore.Address(derived.publicKey, bitcore.Networks.livenet);
+                            var row = table.insertRow(i + 1);
+
+                            var cell0 = row.insertCell(0);
+                            cell0.innerHTML = "[" + (i + 1) + "]";
+
+                            var cell1 = row.insertCell(1);
+                            cell1.className = "active"
+                            if (blnshowaddress == true) {
+                                cell1.innerHTML = "<img src='images/qrcode2.png' class='menu_links' data-toggle='modal' data-target='.bs-example-modal-sm' data-whatever='" + address1.toString() + "'> " +
+                                                  "<a href='http://blockscan.com/address/" + address1.toString() + "' target='_blank'><small>" + address1.toString() + "</small></a>";
+                            } else { cell1.innerHTML = "..."; }
+                            var cell2 = row.insertCell(2);
+                            cell2.className = "warning"
+                            if (blnshowkeys == true) {
+                                cell2.innerHTML = "<small>" + derived.privateKey.toWIF() + "</small>";
+                            } else { cell2.innerHTML = "..."; }
+
+                            var cell3 = row.insertCell(3);
+                            cell3.innerHTML = "<button type=\"button\" class=\"btn btn-primary btn-xs\" data-toggle=\"modal\" data-target=\"#myModal2\" data-address='" + address1.toString() + "' data-privatekey='" + derived.privateKey.toWIF() + "'>Message</button>"
+
+                        }
+                        $("#spinwheel").hide();
+                    }, 500);
+                    $("#login").hide();
+                    $("#addresstable").show();
+                }
+            }
+
+            myFunction();
+
+            function makecode(strcode) {
+                document.getElementById("qrcode").innerHTML = '';
+                var qrcode = new QRCode("qrcode", {
+                    text: strcode,
+                    width: 190,
+                    height: 190,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+
+
+            function signmessage() {
+
+                var strmsgtosign = $('#messagetosign').val();
+                var strwifkey = $('#signprivatekey').val();
+
+                var key = bitcoin.ECKey.fromWIF(strwifkey)
+                var message = strmsgtosign;
+                var signature = bitcoin.Message.sign(key, message);
+                $('#signedmessage').val(signature.toString('base64'));
+                alert('Message Signed')
+
+            }
+
+            $('#myModal').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget)
+                var recipient = button.data('whatever')
+                var modal = $(this)
+                modal.find('.modal-title').text("QRcode for BTC Address " + recipient + "")
+                makecode(recipient);
+            })
+
+            $('#myModal2').on('show.bs.modal', function (event) {
+                var button = $(event.relatedTarget)
+                var strAddress = button.data('address')
+                var strPrivKey = button.data('privatekey')
+                var modal = $(this)
+                modal.find('.modal-title2').text("Sign Message for " + strAddress + "")                
+                $('#signaddress').val(strAddress);
+                $('#signprivatekey').val(strPrivKey);
+                $('#messagetosign').val('');
+                $('#signedmessage').val('');                                
+            })
+            
+
+        </script>
+
+    </div>
+    <hr style="width: 830px; margin-left: auto; margin-right: auto;" />
+    <footer class="footer">
+        <div class="container">
+            <p align="center">Copyright (c) 2015 <a href="https://blockscan.com">blockscan.com</a> | No warranty provided | <a href="https://github.com/blockscan/cw_address_key_generator" target="_blank">GitHub Repository</a></p>
+        </div>
+    </footer>
+
+    <script type="text/javascript" src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>
+
+</body>
+</html>

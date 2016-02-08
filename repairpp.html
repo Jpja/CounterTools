@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/pushtx.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script>
+function validateInputPP() {
+	var ppInput = document.getElementById('passphrase').value;
+	var output = "&nbsp;";
+	var ppClean = cleanPPformat(ppInput);
+	var words = ppClean.split(' ');
+	if (isValidPP(ppClean) && ppClean != ppInput) {
+		output = "Passphrase OK, just some formatting issues.<br><pre style=\"background-color:silver;white-space:pre-wrap;\">"+ppInput+"</pre><pre style=\"background-color:silver;white-space:pre-wrap;\">"+ppClean+"</pre>";
+	} else if (isValidPP(ppClean)) {
+		output = "Passphrase OK";
+	} else if (words.length > 12) {
+		output = "The entered passphrase is more than 12 words.";
+	} else {
+		var suggest = repairPP(ppClean);
+		var suggestwords = suggest.split(' ');
+		for (i = suggestwords.length; i < 12; i++) {
+			suggest += " ???";
+		}
+		output = highlightDiffWords(suggest, ppClean);
+	}
+	
+	document.getElementById('ppfeedback').innerHTML = output;
+}
+searchThese = [];
+findAddress = '';
+function prepareSearch() {
+	var ppInput = document.getElementById('trypassphrase').value;
+	var ppClean = cleanPPformat(ppInput);
+	findAddress = document.getElementById('knownaddress').value;
+	
+	if (isValidPP(ppClean) == false) {
+		document.getElementById('passphraseresult').innerHTML = "Please enter a valid passphrase.";
+		return;
+	}
+	if (isValidAddress(findAddress) == false) {
+		document.getElementById('passphraseresult').innerHTML = "Please enter a valid bitcoin address.";
+		return;
+	}
+	
+	ppInt = ppStringToIntArray(ppClean);
+	searchThese[0] = ppClean;
+	searchThese[1] = ppIntArrayToString([ppInt[1], ppInt[0], ppInt[2], ppInt[3], ppInt[4], ppInt[5], ppInt[6], ppInt[7], ppInt[8], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[2] = ppIntArrayToString([ppInt[0], ppInt[2], ppInt[1], ppInt[3], ppInt[4], ppInt[5], ppInt[6], ppInt[7], ppInt[8], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[3] = ppIntArrayToString([ppInt[0], ppInt[1], ppInt[3], ppInt[2], ppInt[4], ppInt[5], ppInt[6], ppInt[7], ppInt[8], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[4] = ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[4], ppInt[3], ppInt[5], ppInt[6], ppInt[7], ppInt[8], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[5] = ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[3], ppInt[5], ppInt[4], ppInt[6], ppInt[7], ppInt[8], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[6] = ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[3], ppInt[4], ppInt[6], ppInt[5], ppInt[7], ppInt[8], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[7] = ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[3], ppInt[4], ppInt[5], ppInt[7], ppInt[6], ppInt[8], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[8] = ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[3], ppInt[4], ppInt[5], ppInt[6], ppInt[8], ppInt[7], ppInt[9], ppInt[10], ppInt[11]]);
+	searchThese[9] = ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[3], ppInt[4], ppInt[5], ppInt[6], ppInt[7], ppInt[9], ppInt[8], ppInt[10], ppInt[11]]);
+	searchThese[10]= ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[3], ppInt[4], ppInt[5], ppInt[6], ppInt[7], ppInt[8], ppInt[10], ppInt[9], ppInt[11]]);
+	searchThese[11]= ppIntArrayToString([ppInt[0], ppInt[1], ppInt[2], ppInt[3], ppInt[4], ppInt[5], ppInt[6], ppInt[7], ppInt[8], ppInt[9], ppInt[11], ppInt[10]]);
+	var ind = 11;
+	for (var i = 0; i < 12; i++) {
+		for (var j = 0; j < 1626; j++) {
+			var searchInd = [];
+			for (var k = 0; k < 12; k++) {
+				if (k == i) {
+					searchInd[k] = j;
+				} else {
+					searchInd[k] = ppInt[k];
+				}
+			}
+			ind += 1;
+			searchThese[ind] = ppIntArrayToString(searchInd);
+		}
+	}	
+	document.getElementById('passphraseresult').innerHTML = "Searching...";
+	setTimeout(findPattern, 30, 0);
+}
+function findPattern(searchInd) {
+//function recursively calls itself until pattern found or all combos tried 
+	if (searchInd >= searchThese.length) {
+		document.getElementById('passphraseresult').innerHTML = "Search complete. No matching passphrase found.";
+		return;
+	}
+	var bitcore = require('bitcore');
+	var adjind = new Uint32Array(4);
+	var ppind = ppStringToIntArray(searchThese[searchInd]);
+	var res = '';
+	for (var j=0; j < 4; j++) {
+		adjind[j] = ppind[3*j] +
+				1626 * (ppind[3*j+1] - ppind[3*j] - Math.floor((ppind[3*j+1] - ppind[3*j]) / 1626) * 1626) +
+				2643876 * (ppind[3*j+2] - ppind[3*j+1] - Math.floor((ppind[3*j+2] - ppind[3*j+1]) / 1626) * 1626);
+		res += ('00000000' + adjind[j].toString(16)).substr(-8);
+	}
+	var HDPrivateKey = bitcore.HDPrivateKey.fromSeed(res, bitcore.Networks.livenet);
+	var ppOK = false;
+	for (var i=0; i < 3; i++) {
+		var derived = HDPrivateKey.derive("m/0'/0/" + i);
+		var address = bitcore.Address(derived.publicKey, bitcore.Networks.livenet);
+		if (address.toString() == findAddress) {
+			ppOK = true;
+		}
+	}
+	if (ppOK) {
+		outputPassphrase(searchThese[searchInd]);
+		return;
+	}
+	var progress = searchInd / searchThese.length;
+	var progressPrint = (progress * 100).toFixed(1) + "%";
+	document.getElementById('passphraseresult').innerHTML = "Searching... (" + progressPrint + ")<br>" + searchThese[searchInd];
+	setTimeout(findPattern, 20, searchInd+1);
+}
+function outputPassphrase(passphrase) {
+	var addresses = genAddr(passphrase, 3, false);
+	
+	var output = "";
+	output += "Success! Your passphrase is:<br><br>";
+	output += "<div class=\"boxWarning\">Keep these 12 words secret! If someone gets your passphrase, they gain access to your funds!</div>";
+	output += "<span class=\"monospaceBold\" style=\"font-size:160%;\">" + passphrase + "</span>";
+	output += "<br><br>The corresponding addresses are:<span class=\"monospace\"><br>";
+	for (var i = 0; i < addresses.length; i++) {
+		output += "<br>#" + (i+1) + ": "+ addresses[i][0];
+	}
+	output += "</span>";	
+	document.getElementById('passphraseresult').innerHTML = output;
+}
+</script>
+</head>
+<body onload="drawMenus();firstEntropy();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Repair Broken Passphrase</h1>
+<div class="boxInfo">A passphrase consists of 12 random words from a 1626 word dictionary.<br><br>There are more than 10^38 different combinations, which is a trillion trillion trillion times a hundred.<br><br>If you have lost your passphrase it is impossible to recover it.<br><br>This tool will help you only if your passphrase is misspelled or you forgot one of the twelve words.</div>
+<h2>If Your Passphrase is Invalid</h2>
+Enter your broken passphrase. Typos will be highlighted and auto-corrected.
+<input type="text" onkeyup="validateInputPP()" id="passphrase" placeholder="PASSPHRASE" style="width:545px;"><br>
+<div id="ppfeedback">&nbsp;</div>
+
+<h2>If You Login to an Empty Wallet</h2>
+Even if there's a typo in your passphrase, it may still be valid. E.g. if the passphrase contains 'sigh' but you write 'sign', you will open an empty wallet.<br><br>
+This tool will scan thousands of passphrases to find that one word you misspelled. Please be patient. A full search takes up to an hour.<br> 
+
+<input type="text" id="trypassphrase" placeholder="PASSPHRASE" style="width:545px;"><br>
+<input type="text" id="knownaddress" placeholder="ADDRESS" style="width:445px;"><br>
+<button onclick="prepareSearch()">Search</button>
+<div id="passphraseresult"></div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

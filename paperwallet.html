@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/pushtx.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<style>
+#paperwallet table {
+	width:100%;
+    padding:10px 0px 5px 0px; /*top right bottom left*/
+}
+#paperwallet th {
+	text-align:left;
+	font-size:22px;
+}
+#paperwallet .walletaddress {
+	text-align:left;
+    vertical-align:top;
+}
+#paperwallet .walletkey {
+	text-align:right;
+    vertical-align:bottom;
+}
+#paperwallet hr { 
+    display: block;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: auto;
+    margin-right: auto;
+    border-style: inset;
+    border-width: 2px;
+}
+</style>
+	
+<script>
+function validateInput() {
+	var input = document.getElementById('password').value;
+	var output = "&nbsp;";
+	var ppClean = cleanPPformat(input);
+	var words = ppClean.split(' ');
+	if (words.length == 12 && words[11].length >= 3) {
+		if (isValidPP(ppClean)) {
+			output = "Passphrase OK";
+		} else {
+			var suggest = repairPP(ppClean);
+			if (suggest.indexOf("???") > -1) {
+				output = "The entered passphrase is not valid.<br />" + highlightDiffWords(suggest, ppClean);
+			} else {
+				output = "Do you mean<br />" + highlightDiffWords(suggest, ppClean)  + "?";
+			}
+		}
+	} else {
+		var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, input);
+		decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+		if (isValidPP(decrypted)) {
+			output = "Password OK";
+		} else {
+			output = decrypted;
+		}
+	}
+	document.getElementById('pwfeedback').innerHTML = output;
+}
+function generate() {
+	//validate input password or passphrase
+	var inputpw = document.getElementById('password').value;
+	var output = "";
+	var inputsOK = false;
+	var ppClean = cleanPPformat(inputpw);
+	if (isValidPP(ppClean)) {
+		inputsOK = true;
+	} else {
+		var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, inputpw);
+		decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+		if (isValidPP(decrypted)) {
+			inputsOK = true;
+			ppClean = decrypted;
+		}
+	}
+	if (inputsOK == false) {
+		output = "Please enter the correct password or a valid 12 word passphrase.";
+		document.getElementById("genfeedback").innerHTML = output;
+		return;
+	}
+	document.getElementById("genfeedback").innerHTML = "";
+	
+	//get all inputs
+	var numAddr = document.getElementById('numAddr').value;
+	var qrcode = document.getElementById('qrcode').checked;
+	var dispPP = document.getElementById('dispPP').checked;
+	var privatekeys = document.getElementById('privatekeys').checked;
+	var every4 = document.getElementById('every4').checked;
+	
+	//draw paperwallet
+	var addresses = genAddr(ppClean,numAddr,true);
+	output += "<table class=\"monospaceBold\" style=\"font-size:19px;\"><tr><th>Passphrase</th></tr><tr><td>";
+	if (dispPP) {
+		var words = ppClean.split(' ');
+		for (i = 0; i < 6; i++) {
+			output += fixedlength(words[i],11);
+		}
+		output += "<br/>";
+		for (i = 6; i < 12; i++) {
+			output += fixedlength(words[i],11);
+		}
+	} else {
+		output += "__________ __________ __________ __________ __________ __________<br/>__________ __________ __________ __________ __________ __________";
+	}
+	output += "</td></tr></table><table class=\"monospaceBold\" style=\"font-size:16px;\">";
+	output += "<tr><th colspan=\"2\">Addresses</th></tr>";
+	for (i = 0; i < numAddr; i++) {
+		var lineNr = i+1;
+		var address = addresses[i][0];
+		if (every4) address = address.replace(/(.{4})/g,'$1 ');
+		var privkey = "&nbsp;";
+		if (privatekeys) {
+			privkey = addresses[i][1];
+			if (every4) privkey = privkey.replace(/(.{4})/g,'$1 ');
+			privkey = "Secret Private Key<br/>"+privkey;
+		}	
+		output += "<tr><td id=\"qrcode"+lineNr+"\" rowspan=\"2\"></td><td class=\"walletaddress\">Address #"+lineNr+"<br/>"+address+"</td></tr><tr><td class=\"walletkey\">"+privkey+"</td></tr>";
+		if (i != numAddr-1) {
+			output += "<tr  class=\"walletbetween\"><td colspan=\"2\"><hr></td></tr>";
+		}
+	}
+	output += "</table>";
+	output += "<button onclick=\"location.reload();\" style=\"font-size:13px;float: right;\">Refresh</button>";
+	
+	document.getElementById("paperwallet").innerHTML = output;
+	
+	if (qrcode) {
+		for (i = 0; i < numAddr; i++) {
+			//new QRCode(document.getElementById("qrcode" + (i+1)), addresses[i][0]);
+			new QRCode("qrcode" + (i+1), {
+								text: addresses[i][0],
+								width: 80,
+								height: 80,
+								colorDark: "#000000",
+								colorLight: "#ffffff",
+								correctLevel: QRCode.CorrectLevel.Q
+							});
+		}
+	}
+	
+	//new QRCode(document.getElementById("paperwallet"), "1234");
+}
+</script>
+</head>
+<body onload="drawMenus();firstEntropy();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Paper Wallet from Passphrase</h1>
+
+<div id="paperwallet">
+<form>
+	Generate a printable table.<br><br>
+	<input type="checkbox" id="dispPP" checked> Display 12 word passphrase<br>	
+	<input type="checkbox" id="qrcode" checked> Display QR Codes<br>
+	<input type="checkbox" id="privatekeys"> Display private keys<br>
+	<input type="checkbox" id="every4" checked> Space after every 4 characters<br>
+	<input type="number" id="numAddr" value="5" min="1" step="1" style="width:80px;"> # of addresses<br><br>
+	Password or 12 Word Passphrase<br>
+	<input type="password" onkeyup="validateInput()" id="password" placeholder="PASSWORD" style="width:545px;">
+</form>
+<div id="pwfeedback">&nbsp;</div>
+
+<button onclick="generate()">Generate Paperwallet</button>
+<div id="genfeedback"></div>
+</div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

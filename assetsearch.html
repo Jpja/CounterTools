@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt" async></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	<script src="lib/anchorme/anchorme.min.js"></script>
+	<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+<style>
+section table {
+	border-collapse: collapse;
+}
+section td {
+	padding:2px 7px 2px 7px; /*top right bottom left*/
+}
+section tr:nth-child(even) {
+    background-color: PeachPuff;
+}
+section tr:nth-child(odd) {
+    background-color: LightBlue;
+}
+</style>
+<script>
+var arrayLength;
+var asset_descr_owner = [];
+var apiTimeout;
+function initalizeSearch() {
+	arrayLength = ASSET_LIST.length;
+	for (var i=0; i < arrayLength; i++) {
+		asset_descr_owner[i] = ASSET_LIST[i][0] + " " + ASSET_LIST[i][1].toUpperCase() + " " + ASSET_LIST[i][2];
+	}
+}
+function searchAssets() {
+	clearTimeout(apiTimeout);
+	var search = document.getElementById("searchbox").value;
+	var apisearch = "&nbsp;";
+	var exactmatch = "&nbsp;";
+	var startswithmatch = "";
+	var exactmatchDescr = "";
+	var partialmatch = "";
+	var descriptionmatch = "";
+	var hits = 0;
+	var maxHits = 1000;
+	var feedback = "";
+	search = search.toUpperCase();
+	if (search.length >= 3) {
+		for (var i = 0; i < arrayLength; i++) {
+			var ind = asset_descr_owner[i].indexOf(search);
+			if (ind > -1) {
+				hits += 1;
+				if (ASSET_LIST[i][0] == search) {
+					exactmatch = ASSET_LIST[i][0] 
+					exactmatchDescr = ASSET_LIST[i][1];
+				} else if (ind == 0 && hits <= maxHits) {
+					startswithmatch = startswithmatch + "<tr><td>" + ASSET_LIST[i][0] + "</td><td>" + ASSET_LIST[i][1] + "</td></tr>";
+				} else if (ASSET_LIST[i][0].indexOf(search) > -1  && hits <= maxHits) {
+					partialmatch = partialmatch + "<tr><td>" + ASSET_LIST[i][0] + "</td><td>" + ASSET_LIST[i][1] + "</td></tr>";
+				} else if (hits <= maxHits) {
+					descriptionmatch = descriptionmatch + "<tr><td>" + ASSET_LIST[i][0] + "</td><td>" + ASSET_LIST[i][1] + "</td></tr>";
+				}
+			}
+		}
+	if (hits >= maxHits) feedback = "More than " + commafy(maxHits) + " hits from a list of " + commafy(arrayLength) + " assets";
+	else feedback = hits + " hits from a list of " + commafy(arrayLength) + " assets";
+	if (hits == 1) feedback = feedback.replace("hits", "hit");
+	}
+	if (exactmatch == "&nbsp;" && isValidAsset(search)) {
+		exactmatch = "..&nbsp;";
+		apiTimeout = setTimeout(assetFromApi, 1000, search);
+	}
+	document.getElementById("demo").innerHTML = feedback + "<table><tr><td id=\"exactmatch\" style=\"width:210px\"><b>"+exactmatch+"</b></td><td id=\"exactmatchDescr\" style=\"width:400px\"><b>"+exactmatchDescr+"</b></td></tr>" + startswithmatch + partialmatch + descriptionmatch + "</table>";
+}
+
+function assetFromApi(asset) {
+	var apiAsset = getAssetInfo(asset);
+	if (apiAsset.name == asset) {
+		document.getElementById("exactmatch").innerHTML = asset;
+		document.getElementById("exactmatchDescr").innerHTML = apiAsset.description;
+	} else document.getElementById("exactmatch").innerHTML = "No exact match";
+}
+	
+function commafy(num) {
+	var str = num.toString().split('.');
+	if (str[0].length >= 5) {
+		str[0] = str[0].replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+	}
+	if (str[1] && str[1].length >= 5) {
+		str[1] = str[1].replace(/(\d{3})/g, '$1 ');
+	}
+	return str.join('.');
+}
+</script>
+
+</head>
+<body onload="drawMenus();initalizeSearch();">
+
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+<h1>Instant Asset Search</h1>
+	<p>Enter an asset name to check if it has been registered</p>
+
+	<form>
+	  <input type="text" onkeyup="searchAssets()" id="searchbox">
+	</form>
+
+<div id="demo"></div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

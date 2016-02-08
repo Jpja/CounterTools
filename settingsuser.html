@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<!--<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>-->
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+
+<script>
+function drawColorTable() {
+	var htmlColors = ["AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet","Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan","DarkBlue","DarkCyan","DarkGoldenRod","DarkGray","DarkGrey","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange","DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkSlateGrey","DarkTurquoise","DarkViolet","DeepPink","DeepSkyBlue","DimGray","DimGrey","DodgerBlue","FireBrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro","GhostWhite","Gold","GoldenRod","Gray","Grey","Green","GreenYellow","HoneyDew","HotPink","IndianRed","Indigo","Ivory","Khaki","Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenRodYellow","LightGray","LightGrey","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSlateGrey","LightSteelBlue","LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquaMarine","MediumBlue","MediumOrchid","MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed","MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange","OrangeRed","Orchid","PaleGoldenRod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru","Pink","Plum","PowderBlue","Purple","RebeccaPurple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen","SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","SlateGrey","Snow","SpringGreen","SteelBlue","Tan","Teal","Thistle","Tomato","Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"];
+	var output = "<b>All CSS Color Names</b><br><br><table style=\"border-collapse:collapse;margin:0px;width: 100%;\">";
+	for(var i=0; i < htmlColors.length; i++) {
+		output += "<tr style=\"background-color:"+htmlColors[i]+";\"><td style=\"font-family:Monaco,monospace;font-weight:bold;border:1px solid black;padding:3px;font-size:90%;\">"+htmlColors[i]+"<br><span style=\"color:white;\">&nbsp;"+htmlColors[i]+"</span></td></tr>";
+	}
+	output += "</table>";
+	document.getElementById('colortable').innerHTML =  output;
+}
+function writeFees() {
+	var btcPrice = getPrice('BTC');
+	var display = "<pre>";
+	display += fixedlength("Wallet name",24)+"\""+WALLET_NAME+"\"\n";
+	display += fixedlength("Wallet title",24)+"\""+WALLET_TITLE+"\"\n";
+	display += fixedlength("Number of addresses",24)+NUM_ADDR_DISPLAY+"\n";
+	display += fixedlength("BTC transaction fee",24)+TX_FEE.toFixed(8)+" ($"+(TX_FEE*btcPrice.usd).toFixed(3)+")\n";
+	display += fixedlength("BTC to receiver",24)+TO_RECEIVER.toFixed(8)+" ($"+(TO_RECEIVER*btcPrice.usd).toFixed(3)+")\n";
+	display += fixedlength("BTC redeemable multisig",24)+MSIG_OUTPUT.toFixed(8)+" ($"+(MSIG_OUTPUT*btcPrice.usd).toFixed(3)+")</pre>";
+	document.getElementById('fees').innerHTML =  display;
+}
+</script>
+
+</head>
+<body onload="drawMenus();drawColorTable();writeFees();">
+
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div id="colortable" class="boxInfo"></div>
+<h1>User Settings</h1>
+
+<h2>Colors</h2>
+Open the file <code>settings/styles.css</code> in a text editor. Change the background color and other parameters as you like. 
+
+<h2>Wallet and Fees</h2>
+Open the file <code>settings/general.txt</code> to change the wallet name, number of addresses to display and fees. Your current settings are
+<span id="fees"></span>
+Setting the BTC amounts too low will slow down transactions. Setting the fee any lower than 0.00004000 is not recommended.
+
+<h2>Assets</h2>
+Open the file <code>settings/assets.txt</code> to set which assets to display first and which ones to ignore. You can also filter out all assets below a certain balance.<br><br>
+The file <code>settings/asset_list.txt</code> contains a list of most assets. Get an updated list at <a href="http://xcp.pw/assets-jsarray.html" target="_blank">xcp.pw</a>.
+
+<h2>Menu</h2>
+The file <code>settings/menu.txt</code> contains a list of all the menu items. If you want to change the order, remove links or add new modules, you can do it here.
+
+<h2>Encryption</h2>
+To use the wallet you need an encrypted passphrase. Make one here and encrypt it here.<br><br>
+A watch-only wallet is also possible. Follow the instructions on the encryption page.
+  
+
+  
+
+
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

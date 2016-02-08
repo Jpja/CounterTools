@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/aes.js"></script>-->
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	<script src="lib/anchorme/anchorme.min.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+	
+<script>
+function prepareValues() {
+	document.getElementById('toreceiver').value = TO_RECEIVER.toFixed(8);
+	document.getElementById('txfee').value = TX_FEE.toFixed(8);
+	document.getElementById('waitsecs').value = 20;
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"sendaddress\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+	document.getElementById('submit').disabled = false;
+}
+function validateAndSend() {
+	document.getElementById('sendplan').innerHTML = "";
+	document.getElementById('sendfeedback').innerHTML = "";
+	var sendInputs = document.getElementById('sendlist').value.replace(/\s*$/,"").split('\n');
+	var receiveAddr = [];
+	var sendAsset = [];
+	var sendAmount = [];
+	var btcToReceiver = document.getElementById('toreceiver').value;
+	btcToReceiver = Number(btcToReceiver);
+	var txFee = document.getElementById('txfee').value;
+	txFee = Number(txFee);
+	var waitSecs = document.getElementById('waitsecs').value;
+	waitSecs = Number(waitSecs);
+	var address = document.getElementById("sendaddress");
+	address = address.options[address.selectedIndex].text;
+	var password = document.getElementById('password').value;
+	var decrypted = decryptPassword(password);
+	if (!isNaN(decrypted)) {
+		document.getElementById('sendfeedback').innerHTML = "Wrong password";
+		return;
+	}
+	//find all addresses, assets, and amounts
+	var wrongAmountInputs = [];
+	for(var i = 0;i < sendInputs.length;i++){
+		sendInputs[i] = sendInputs[i].trim();
+		sendInputs[i] = sendInputs[i].replace(',',' ');
+		sendInputs[i] = sendInputs[i].replace(';',' ');
+		var split = sendInputs[i].split(' ');
+		receiveAddr[i] = split[0];
+		sendAsset[i] = split[1];
+		sendAmount[i] = split[2];
+		sendAmount[i] = Number(sendAmount[i]);
+		wrongAmountInputs[i] = false;
+		if (split.length != 3) wrongAmountInputs[i] = true;
+	}
+	//return if any invalid value
+	for(var i = 0;i < sendInputs.length;i++){
+		if (wrongAmountInputs[i]) {
+			document.getElementById('sendfeedback').innerHTML = "Send (#"+ (i+1) +") is invalid<br>Example of a valid line: 1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK FLDC 1234.56";
+			return;
+		} else if (isValidAddress(receiveAddr[i]) == false) {
+			document.getElementById('sendfeedback').innerHTML = "Send (#"+ (i+1) +") is invalid<br>Recipient address is not valid.";
+			return;
+		} else if (isValidAsset(sendAsset[i]) == false) {
+			document.getElementById('sendfeedback').innerHTML = "Send (#"+ (i+1) +") is invalid<br>Asset name is either 'A' followed by a 18-19 digits, or a word of 4-12 characters that cannot start with 'A'.";
+			return;
+		} else if (isNaN(sendAmount[i]) || sendAmount[i] <= 0) {
+			document.getElementById('sendfeedback').innerHTML = "Send (#"+ (i+1) +") is invalid<br>Amount must be a positive number.";
+			return;
+		} else if (isDivisible(sendAsset[i]) == false && sendAmount[i] % 1 !== 0) {
+			document.getElementById('sendfeedback').innerHTML = "Send (#"+ (i+1) +") is invalid<br>Asset is indivisible. Therefore the amount must be an integer.";
+			return;
+		}
+		//note that asset balances are not checked.
+	}
+	
+	//Print plan of sends
+	var output = "<pre>Send Plan";
+	var registerIndex = -1;
+	var d = new Date();
+	var timeFormatWidth = d.toLocaleTimeString().length;
+	var maxLenAsset = assetReadable(sendAsset[0]).length;
+	for (var i = 0;i < sendInputs.length;i++){
+		if (maxLenAsset < assetReadable(sendAsset[i]).length) maxLenAsset = assetReadable(sendAsset[i]).length;
+	}	
+	for (var i = 0;i < sendInputs.length;i++){
+		var d = new Date();
+		d.setSeconds(d.getSeconds() + 1 + i*waitSecs);
+		output += "\n#" + fixedlength((i+1), 4);
+		output += fixedlength(d.toLocaleTimeString(), timeFormatWidth + 3);
+		output += fixedlength(addressReadable(receiveAddr[i]), 14) + fixedlength(assetReadable(sendAsset[i]),maxLenAsset+1) + fixedlength(sendAmount[i].toFixed(8), 18, true);
+	}
+	output += "</pre>";
+	document.getElementById('sendplan').innerHTML = output;
+	
+	//Send after timeout
+	document.getElementById('password').value = "";
+	document.getElementById('submit').disabled = true;
+	var timeNow = new Date();
+	for (var i = 0;i < sendInputs.length;i++){
+		var d = new Date();
+		d.setSeconds(d.getSeconds() + 1 + i*waitSecs);
+		var waitMs = Math.abs(d - timeNow);
+		setTimeout(sendXCP_opreturn, waitMs, address, receiveAddr[i], sendAsset[i], sendAmount[i], btcToReceiver, TX_FEE, decrypted);
+	}
+	setTimeout(enableSubmitButton, 1 + sendInputs.length*waitSecs);
+}
+function enableSubmitButton() {
+	document.getElementById('submit').disabled = false;
+}
+</script>
+
+</head>
+<body onload="drawMenus();prepareValues();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">Enter one transaction per line.<br><br><b>Did you know?</b><br>You can send any amount of Bitcoin together with an asset, and vice versa.<br><br>Why not distribute coupons or discount tokens together with your Bitcoin payments?</div>
+<h1>Send to Many</h1>
+
+Transactions (One per line)<br>
+<span title="Example: 1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK FLDC 1234.56">Format: <i>Recipient Asset Amount</i></span><br>
+<textarea  id="sendlist" rows="8" cols="60"></textarea><br><br>
+BTC to Recipient<br>
+<input type="text" id="toreceiver" style="width:150px;"><br>
+Tx Fee<br>
+<input type="text" id="txfee" style="width:150px;"><br>
+Seconds Between Registrations (Min 10)<br>
+<input type="number" id="waitsecs" min="10" step="1" style="width:100px;"><br>
+Send From Address<br>
+<span id="optionslist"></span><br>
+Password<br>
+<input type="password" id="password"><br>
+<input type="button" onclick="validateAndSend()" id="submit" value="SEND">
+<div id="sendfeedback">&nbsp;</div>
+<div id="sendplan">&nbsp;</div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/pushtx.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<style>
+ul#watchlist {
+	list-style-type:square;
+	padding: 0px;
+}
+ul#watchlist li {
+	margin-left: 15px;
+	padding: 2px;
+}
+</style>
+
+<script>
+videos = [
+	["What is Counterparty?", "jopLX4_CAWo"],
+	["Adam Krellenstein, co-founder of CP", "tpTIiqio4fk"],
+	["1hr interview, Robby Dermody, co-founder", "FUZJ0QRjVUI"],
+	["What is XCP?", "eJtnz50TxWs"],
+	["What is Crypto Equity?", "E0g6nae4Ae4"],
+	["The New Token Economy, Adam B. Levine", "o5gA63UiV-o"],
+	["What is a Vending Machine?", "Pht1xqw0GeU"],
+	["Tokenly Swapbot", "s3La1XmStDQ"],
+	["Paper Wallets and Cold Storage", "I1uefzJJ6nM"],
+	["What is a CP Broadcast?", "nGskd0U3IRE"],
+	["What was the Counterparty Burn?", "6o4HcISUL3I"]
+];
+currentVid;
+function loadContents() {
+	displayVideo(0);
+	displayWatchlist();	
+}
+function displayVideo(ind) {
+	document.getElementById("video").innerHTML = "<h2>" + videos[ind][0] + "</h2><iframe width=\"550\" height=\"309\" src=\"https://www.youtube-nocookie.com/embed/" + videos[ind][1] + "?rel=0&autoplay=1\" frameborder=\"0\" allowfullscreen></iframe>";
+	currentVid = ind;
+	displayWatchlist();
+}
+function displayWatchlist() {
+	var watchlist = "<b>Watchlist</b>";
+	watchlist += "<ul id=\"watchlist\">";
+	for (var i = 0; i < videos.length; i++) {
+		if (i == currentVid) {
+			watchlist += "<li><i>" + videos[i][0] + "</i></li>";
+		} else {
+			watchlist += "<li onclick=\"displayVideo("+i+")\" style=\"cursor:pointer;\">" + videos[i][0] + "</li>";
+		}
+	}
+	watchlist += "</ul>";
+	document.getElementById("videolist").innerHTML = watchlist;
+}
+</script>
+	
+</head>
+<body onload="drawMenus();loadContents();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div id="videolist" class="boxInfo" style="margin-top:68px;"></div><div id="video"></div>
+
+
+
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<!--<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>-->
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+	
+<script>
+function prepareValues() {
+	document.getElementById("submit").disabled = false;
+	document.getElementById('quantity').value = 0;
+	document.getElementById('waitsecs').value = 20;
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"sendaddress\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+}
+function validateAndSendRegistrations() {
+	document.getElementById('registrationplan').innerHTML = "";
+	var regInputs = document.getElementById('reglist').value.replace(/\s*$/,"").split('\n');
+	var regAsset = [];
+	var assetTaken = [];
+	var assetDuplicate = [];
+	var regDescr = [];
+	var regDescrDefault = document.getElementById('assetdescr').value;
+	var regQuant = document.getElementById('quantity').value;
+	regQuant = Number(regQuant);
+	var divisible = document.getElementById('divisible').checked;
+	var waitSecs = document.getElementById('waitsecs').value;
+	var password = document.getElementById('password').value;
+	var address = document.getElementById("sendaddress");
+	address = address.options[address.selectedIndex].text;
+	if (password.length == 0) password = 'x'; //empty password will give exception with AES.decrypt
+	var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, password);
+	decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+	//find all texts, values and fee fractions
+	for(var i = 0;i < regInputs.length;i++){
+		regInputs[i] = regInputs[i].trim();
+		var split = regInputs[i].split(' ');
+		if (split.length == 1) {
+			regAsset[i] = regInputs[i];
+			regDescr[i] = regDescrDefault;
+		} else {
+			regAsset[i] = split[0];
+			regDescr[i] = regInputs[i].substring(regInputs[i].indexOf(' ')+1);
+		}
+		regDescr[i] = regDescr[i].replace(/%a/g, regAsset[i]); // %a in description is replaced with asset name
+		assetTaken[i] = inAssetList(regAsset[i]); //true if asset in list of existing assets
+		if (regAsset.indexOf(regAsset[i]) < i && regAsset.indexOf(regAsset[i]) > -1) {
+			assetDuplicate[i] = true;
+		} else {
+			assetDuplicate[i] = false;
+		}
+	}
+	//return if any invalid value
+	for(var i = 0;i < regInputs.length;i++){
+		var textAscii = regDescr[i].replace(/[^ -~]/gi, 'ƫ'); //replace with some very rare character
+		if (isValidAsset(regAsset[i]) == false) {
+			document.getElementById('sendfeedback').innerHTML = "Registration of " + regAsset[i] +" (#"+ (i+1) +") is invalid<br>Asset name is either 'A' followed by a 18-19 digits, or a word of 4-12 characters that cannot start with 'A'.";
+			return;
+		} else if (regDescr[i].length > 22) {
+			document.getElementById('sendfeedback').innerHTML = "Registration of " + regAsset[i] +" (#"+ (i+1) +") is invalid<br>Max description length is 22 chars.";
+			return;
+		} else if (textAscii != regDescr[i] || isNaN(regQuant) || regQuant < 0) {
+			document.getElementById('sendfeedback').innerHTML = "Registration of " + regAsset[i] +" (#"+ (i+1) +") is invalid<br><i>" + highlightDiffChars(regDescr[i],textAscii) +" "+regQuant+"</i>";
+			return;
+		} else if (divisible == false && regQuant % 1 !== 0) {
+			document.getElementById('sendfeedback').innerHTML = "Error. For an indivisible asset the quantity must be an integer.";
+			return;
+		} else if (decrypted == "") {
+			document.getElementById('sendfeedback').innerHTML = "Wrong password.";
+			return;
+		}
+	}
+	
+	//Print plan of registrations
+	var output = "<pre>Asset Registration Plan";
+	var registerIndex = -1;
+	var d = new Date();
+	var timeFormatWidth = d.toLocaleTimeString().length;
+	for(var i = 0;i < regInputs.length;i++){
+		if (assetTaken[i] == false && assetDuplicate[i] == false) {
+			registerIndex += 1;
+			var d = new Date();
+			d.setSeconds(d.getSeconds() + 1 + registerIndex*waitSecs);
+			output += "\n#" + fixedlength((registerIndex+1), 4);
+			output += fixedlength(d.toLocaleTimeString(), timeFormatWidth + 4);
+			output += fixedlength(regAsset[i], 22) + fixedlength(regDescr[i], 23) + "Q=" + regQuant + " Div=" + divisible;
+		} else if (assetTaken[i] == true) {
+			output += "\n<mark>     " + fixedlength(" ", timeFormatWidth + 4);
+			output += fixedlength(regAsset[i], 22) + "Asset taken. Cannot register</mark>";
+		} else {
+			output += "\n<mark>     " + fixedlength(" ", timeFormatWidth + 4);
+			output += fixedlength(regAsset[i], 22) + "Duplicate</mark>";
+		}
+	}
+	output += "</pre>";
+	document.getElementById('registrationplan').innerHTML = output;
+	
+	//Call broadcasts after timeout
+	var timeNow = new Date();
+	var sendIndex = -1;
+	for(var i = 0;i < regInputs.length;i++){
+		if (assetTaken[i] == false && assetDuplicate[i] == false) {
+			sendIndex += 1;
+			var d = new Date();
+			d.setSeconds(d.getSeconds() + 1 + sendIndex*waitSecs);
+			var waitMs = Math.abs(d - timeNow);
+			setTimeout(createIssuance, waitMs, address, regAsset[i], regQuant, divisible, regDescr[i], MSIG_OUTPUT, TX_FEE, decrypted);
+		}
+	}
+}
+</script>
+
+</head>
+<body onload="drawMenus();prepareValues();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">Enter one asset per line.<br><br>Optionally add a space followed by description, e.g. <i>MYCOIN This is my coin!</i></i><br><br>Your address must have several UTXOs to make many registrations. Send BTC dust to your address multiple times to achieve this.</div>
+<h1>Bulk Register Assets</h1>
+
+Assets (One per line)<br>
+<textarea  id="reglist" rows="8" cols="50"></textarea><br>
+Default Description (Max 22 chars)<br>
+<input type="text" id="assetdescr" maxlength="22" style="width:300px;"><br>
+Quantity<br>
+<input type="number" id="quantity" min="0" style="width:150px;"> <input type="checkbox" id="divisible" checked> Divisible<br>
+Seconds Between Registrations (Min 10)<br>
+<input type="number" id="waitsecs" min="10" step="1" style="width:100px;"><br>
+Register From Address<br>
+<span id="optionslist"></span><br>
+Password<br>
+<input type="password" id="password" placeholder="Password"><br>
+<input type="button" onclick="validateAndSendRegistrations()" id="submit" value="REGISTER ASSETS">
+<div id="sendfeedback">&nbsp;</div>
+<div id="registrationplan">&nbsp;</div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

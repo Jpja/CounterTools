@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/pushtx.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+
+	
+<script>
+function validateInputPP() {
+	var ppInput = document.getElementById('passphrase').value;
+	var output = "&nbsp;";
+	var ppClean = cleanPPformat(ppInput);
+	var words = ppClean.split(' ');
+	if (words.length == 12 && words[11].length >= 3) {
+		if (isValidPP(ppClean)) {
+			output = "Passphrase OK";
+		} else {
+			var suggest = repairPP(ppClean);
+			if (suggest.indexOf("???") > -1) {
+				output = "The entered passphrase is not valid: <i>" + highlightDiffWords(suggest, ppClean) + "</i>";
+			} else {
+				output = "Do you mean <i>" + highlightDiffWords(suggest, ppClean)  + "</i>?";
+			}
+		}
+	} else if (words.length > 12) {
+		output = "The entered passphrase is more than 12 words.";
+	}
+	document.getElementById('ppfeedback').innerHTML = output;
+}
+
+function validateInputPW() {
+	var pwInput = document.getElementById('password').value;
+	var output = "";
+	var markColor = "";
+	if (pwInput.length <= 4) {
+		output = "Weak Password";
+		markColor = "red";
+	} else {
+		var score = scorePassword(pwInput);
+		score = adjScorePassword(pwInput, score);
+		if (score < 40) {
+			output = "Weak Password";
+			markColor = "red";
+		} else {
+			var isCommon = pwIsCommon(pwInput);
+			if (isCommon) {
+				output = "Weak Password";
+				markColor = "red";
+			} else {
+				if (score > 100) {
+					score = 100;
+				}
+				output = "Password Strength: " + score + "%";
+				if (score < 50) {
+					markColor = "orangered ";
+				} else if (score < 60) {
+					markColor = "orange ";
+				} else if (score < 70) {
+					markColor = "yellow ";
+				} else if (score < 80) {
+					markColor = "greenyellow ";
+				} else {
+					markColor = "lime";
+				}
+			}
+		}
+	}
+	output = "<mark style=\"background-color:"+markColor+";\">"+output+"</mark>";
+	document.getElementById('pwfeedback').innerHTML = output;
+}
+
+function encryptAndGenCode() {
+	var ppInput = document.getElementById('passphrase').value;
+	var pwInput = document.getElementById('password').value;
+	var ppClean = cleanPPformat(ppInput);
+	var output = "";
+	if (!isValidPP(ppClean)) {
+		output = "Please enter a valid 12 word passphrase.";
+	} else if (pwInput.length == 0) {
+		output = "Please enter a password.";
+	} else {
+		var encrypted = CryptoJS.AES.encrypt(ppClean, pwInput);
+		var addresses = genAddr(ppClean,12);
+		output = "&nbsp;<br><b>Success!</b> Encrypted wallet has been generated.<br>To save it you need to:<br><br>* Copy the below code.<br>* Open the file <code>settings/encryptedpp.txt</code> in a text editor.<br>* Paste the code to the text file.<br>* Save the file.<br><br><pre style=\"background-color:Silver;font-size:9px;\"><code>MY_ENC_PP = '"+encrypted+"';\nMY_ADDR = ['"+addresses[0][0]+"',\n\t'"+addresses[1][0]+"',\n\t'"+addresses[2][0]+"',\n\t'"+addresses[3][0]+"',\n\t'"+addresses[4][0]+"',\n\t'"+addresses[5][0]+"',\n\t'"+addresses[6][0]+"',\n\t'"+addresses[7][0]+"',\n\t'"+addresses[8][0]+"',\n\t'"+addresses[9][0]+"',\n\t'"+addresses[10][0]+"',\n\t'"+addresses[11][0]+"'];</code></pre>";
+		output += "<br><br><b>Optional Watch Only Mode</b><br>If you only want to view balance and not make any transactions, you can instead copy this code:<br><pre style=\"background-color:Silver;font-size:9px;\"><code>MY_ENC_PP = 'watchonly';\nMY_ADDR = ['"+addresses[0][0]+"',\n\t'"+addresses[1][0]+"',\n\t'"+addresses[2][0]+"',\n\t'"+addresses[3][0]+"',\n\t'"+addresses[4][0]+"',\n\t'"+addresses[5][0]+"',\n\t'"+addresses[6][0]+"',\n\t'"+addresses[7][0]+"',\n\t'"+addresses[8][0]+"',\n\t'"+addresses[9][0]+"',\n\t'"+addresses[10][0]+"',\n\t'"+addresses[11][0]+"'];</code></pre>";
+	}
+	
+	document.getElementById('jsfile').innerHTML = output;
+}
+
+function changeButtonState() {
+	var checked = document.getElementById("iUnderstand").checked;
+	if (checked) document.getElementById("encryptButton").disabled = false;
+	else document.getElementById("encryptButton").disabled = true;
+}
+</script>
+
+</head>
+<body onload="drawMenus();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Encrypt Your Wallet</h1>
+
+<div class="boxInfo"><b>Don't have a passphrase?</b><br><a href="generatepp.html">Generate</a> a new!</div>Enter your 12-word passphrase<br>
+<input type="text" onkeyup="validateInputPP()" id="passphrase" placeholder="PASSPHRASE" style="width:545px;"><br>
+<div id="ppfeedback">&nbsp;</div><br>
+
+<div class="boxInfo">A strong password contains a combination of small letter, capital letters, digits and special characters!</div>Enter new password<br>
+<input type="text" onkeyup="validateInputPW()" id="password" placeholder="PASSWORD" style="width:250px;"><br>
+<div id="pwfeedback">&nbsp;</div><br><br>
+
+<b>Caution</b><br>
+A strong password protects against brute force attacks but offers no protections against:
+<ul>
+ <li>Key loggers</li>
+ <li>Screen capture</li>
+ <li>Malicious code alterations</li>
+ <li>Software bugs</li>
+ <li>..and many other threats</li>
+</ul>
+This software comes with no warranty.<br><br>
+<input type="checkbox" id="iUnderstand" onchange="changeButtonState()"> I understand the risks<br>
+
+
+<button id="encryptButton" onclick="encryptAndGenCode()" disabled>Encrypt Passphrase</button>
+<div id="jsfile"></div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

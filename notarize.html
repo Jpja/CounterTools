@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+	
+<script>
+fileName;
+fileSize;
+fileShaHex;
+fileShaB64;
+broadcastText
+checksum;
+checksum2;
+
+function checkFile() {
+	var files = document.getElementById('files').files;
+	var sizeMB = files[0].size / 1048576;
+	sizeMB = Math.round(sizeMB);
+    if (sizeMB >= 50) {
+      document.getElementById('byte_range').innerHTML = "Warning! Selected file is " + sizeMB + " MB.<br>The script may time out.<br>If this happens, please reload and try again.";
+    }
+}
+
+function prepareBroadcast() {
+	var includeName = document.getElementById('includename').checked;
+	var radios = document.getElementsByName('shaencoding');
+	var radioSelect = 0;
+	for (var i = 0; i < radios.length; i++) {
+		if (radios[i].checked) {
+			radioSelect = i; //0=HEX,1=Base-64 
+			break;
+		}
+	}
+
+	var fileNamePrint = fileName;
+	fileNamePrint = fileNamePrint.replace(/[^ -~]/gi, ''); //remove non-ascii characters, otherwise broadcase will fail
+	if (fileNamePrint.length > 11) fileNamePrint = fileNamePrint.substring(0,2) + '*' + fileNamePrint.slice(-8);
+	//var sizeKB = fileSize / 1028;
+	//sizeKB = sizeKB.toFixed(0);
+	var sizeMB = fileSize / 1048576;
+	if (sizeMB > 10) sizeMB = sizeMB.toFixed(0);
+	else sizeMB = sizeMB.toFixed(1);
+	
+	broadcastText = '';
+	if (includeName) broadcastText += fileNamePrint + ' ';
+	if (radioSelect == 0) broadcastText += fileShaHex;
+	else if (radioSelect == 1) broadcastText += fileShaB64;
+	broadcastText = broadcastText.substring(0,32);
+	
+	//make broadcast value file size in bytes 
+	//followed by decimal sum of all characters in hex hash string 
+	//this is strictly not needed but adds some entropy - so why not?
+	var sumHexChars = 0;
+	for (var i = 0; i < fileShaHex.length; i++) {
+		if (fileShaHex[i] == 'a') sumHexChars += 10;
+		else if (fileShaHex[i] == 'b') sumHexChars += 11;
+		else if (fileShaHex[i] == 'c') sumHexChars += 12;
+		else if (fileShaHex[i] == 'd') sumHexChars += 13;
+		else if (fileShaHex[i] == 'e') sumHexChars += 14;
+		else if (fileShaHex[i] == 'f') sumHexChars += 15;
+		else sumHexChars += parseInt(fileShaHex[i]);
+	}
+	checksum = fileSize + "." + sumHexChars;
+	//make broadcast fee fraction last nine decimal characters in hex hash string
+	var lastNineDec = fileShaHex.replace(/[^0-9]/gi, '');
+	lastNineDec = lastNineDec.slice(-9);
+	checksum2 = lastNineDec[0] + "." + lastNineDec.substring(1);
+	
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	
+	//prepare output
+	var output = '';
+	output += "<pre>";
+	output += "File name:       " + fileName + "\n";
+	if (includeName && fileName != fileNamePrint) output += "Short version:   " + fileNamePrint + "\n";
+	output += "File size MB:    " + sizeMB + "\n";
+	output += "File size bytes: " + fileSize + "\n";
+	output += "SHA256 Hex:      " + fileShaHex + "\n";
+	output += "Hex sum:         " + sumHexChars + "\n";
+	output += "Last 9 decimals: " + lastNineDec + "\n";
+	output += "SHA256 Base-64:  " + fileShaB64 + "\n";
+	output += "Broadcast text:  " + broadcastText + "\n";
+	output += "Broadcast value: " + checksum + "\n";
+	output += "Broadcast frac.: " + checksum2 + "\n";
+	output += "</pre>";
+	output += "Remember to keep an exact copy of the file. If you lose the file or make even a tiny change to it, the notarization will be worthless.<br>";
+	if (fileName.toLowerCase().indexOf(".zip") == -1) output += "If you plan on notarizing several files, it is a good idea to collect them all in a single zip file.<br>";
+	output += "The broadcast uses a truncated hash. Don't worry, it is still more than good enough.<br><br>";
+	output += "Broadcast from address:<br>";
+	output += "<select id=\"sendaddress\">"+optionsList+"</select><br>";
+	output += "Enter password:<br>";
+	output += "<input type=\"password\" id=\"password\" placeholder=\"PASSWORD\" style=\"width:200px;\"><br>";
+	output += "<button id=\"sendbroadcast\" onclick=\"validateAndSendBroadcast()\">Broadcast</button>";
+	output += "<div id=\"sendfeedback\">&nbsp;</div>";
+    document.getElementById('byte_range').innerHTML = output;
+	
+}
+function validateAndSendBroadcast() {
+	var password = document.getElementById('password').value;
+	var address = document.getElementById("sendaddress");
+	address = address.options[address.selectedIndex].text;
+	var decrypted = CryptoJS.AES.decrypt(MY_ENC_PP, password);
+	decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+	var output = "&nbsp;";
+	if (decrypted != "") {
+		document.getElementById("sendbroadcast").disabled = true; 
+		sendBroadcast(address, broadcastText, checksum, checksum2, MSIG_OUTPUT, TX_FEE, decrypted);
+	} else {
+		document.getElementById('sendfeedback').innerHTML = "Wrong password.";
+	}
+}
+</script>
+<style>
+  #byte_content {
+    margin: 5px 0;
+    max-height: 100px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  #byte_range { margin-top: 5px; }
+</style>
+
+</head>
+<body onload="drawMenus();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">Notarization is also called 'timestamping' or 'proof-of-existence'.<br><br>Example use cases:<br>&bull; You work on a project. You notarize your work before you share it.<br>&bull; You rent an apartment. You photograph all scratches on the floor and spots on the walls. Then you timestamp the files.</div>
+<h1>Notarize a File</h1>
+
+Select a file you'd like to timestamp.<br><br> 
+
+<input type="file" id="files" name="file" onchange="checkFile()"><br>
+<input type="checkbox" id="includename" checked> Filename in broadcast<br>
+<input type="radio" name="shaencoding" value="csv" checked> SHA-256 Hex<br>
+<input type="radio" name="shaencoding" value="csvquotes"> SHA-256 Base-64<br>
+<span class="readBytesButtons">
+  <button id="preparebutton">Prepare Notarization</button>
+</span>
+<div id="byte_range"></div><BR>
+<div id="byte_content"></div><BR>
+<div id="crypto_sha256"></div>
+
+
+<script>
+
+  var sha256;
+
+  function readBlob(opt_startByte, opt_stopByte) {
+
+    var files = document.getElementById('files').files;
+    if (!files.length) {
+      alert('Please select a file!');
+      return;
+    }
+	
+	document.getElementById("preparebutton").disabled = true;
+
+    var file = files[0];
+    var start = parseInt(opt_startByte) || 0;
+    var stop = parseInt(opt_stopByte) || file.size - 1;
+
+    var reader = new FileReader();
+
+    // If we use onloadend, we need to check the readyState.
+    reader.onloadend = function(evt) {
+      if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+        /*document.getElementById('byte_content').textContent = evt.target.result;
+        document.getElementById('byte_range').textContent = 
+            ['Read bytes: ', start + 1, ' - ', stop + 1,
+             ' of ', file.size, ' byte file'].join('');*/
+
+        //**UPDATED SOLUTION: Since its binary data, the message needs to be converted from string to bytes using Latin1**
+            sha256.update(CryptoJS.enc.Latin1.parse(evt.target.result));
+
+        var hash = sha256.finalize();
+		var hashHex = CryptoJS.enc.Hex.stringify(hash);
+		var hashB64 = CryptoJS.enc.Base64.stringify(hash);
+
+        //document.getElementById('crypto_sha256').textContent = ['SHA-256: ', hash].join('');
+		fileName = file.name;
+		fileSize = file.size;
+		fileShaHex = hashHex;
+		fileShaB64 = hashB64;
+		prepareBroadcast();
+		sha256 = null;
+		document.getElementById("preparebutton").disabled = false;
+      }
+    };
+
+    var blob = file.slice(start, stop + 1);
+    reader.readAsBinaryString(blob);
+  }
+
+  document.querySelector('.readBytesButtons').addEventListener('click', function(evt) {
+    if (evt.target.tagName.toLowerCase() == 'button') {
+      var startByte = evt.target.getAttribute('data-startbyte');
+      var endByte = evt.target.getAttribute('data-endbyte');
+
+      sha256 = CryptoJS.algo.SHA256.create();
+
+      readBlob(startByte, endByte);
+    }
+  }, false);
+</script>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

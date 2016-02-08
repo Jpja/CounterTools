@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/pushtx.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script>
+//Three entopy sources; Two data generated and one user input
+entropyString1 = "";
+entropyString2 = "";
+entropyString3 = "";
+function randomHashInput() {
+	Math.seedrandom();
+	var d = new Date();
+    var n = d.getMilliseconds();
+	var randstring = d + Math.random() + n + Math.random() + Math.random();
+	randstring = CryptoJS.SHA256(randstring).toString();
+	return randstring;
+}
+function firstEntropy() {
+	entropyString1 = randomHashInput();
+}
+function secondEntropy() {
+	var pwInput = document.getElementById('password').value;
+	entropyString2 = CryptoJS.SHA256(pwInput).toString();
+}
+function thirdEntropy() {
+	entropyString3 = randomHashInput();
+}
+function validateInputPW() {
+	var pwInput = document.getElementById('password').value;
+	var output = "";
+	var markColor = "";
+	var score = scorePassword(pwInput);
+	score *= 1.7;
+	score = parseInt(score);
+	if (score > 100) {
+		score = 100;
+	}
+	output = "Strength: " + score + "%";
+	if (score < 50) {
+		markColor = "orangered ";
+	} else if (score < 65) {
+		markColor = "orange ";
+	} else if (score < 80) {
+		markColor = "yellow ";
+	} else if (score < 100) {
+		markColor = "greenyellow ";
+	} else {
+		markColor = "lime";
+	}
+	if (score < 100) {
+		output = "<mark style=\"background-color:"+markColor+";\">"+output+"</mark>";
+	} else {
+		output = "<mark style=\"background-color:"+markColor+";\">Randomness OK</mark>";
+	}
+	document.getElementById('pwfeedback').innerHTML = output;
+}
+function genPP() {
+	var pwInput = document.getElementById('password').value;
+	var score = scorePassword(pwInput);
+	score *= 1.7;
+	score = parseInt(score);
+	if (score < 100) {
+		document.getElementById('newpassphrase').innerHTML = "Please type more random characters.";
+		return;
+	}
+	secondEntropy();
+	thirdEntropy();
+	//this will catch some erroneous modifications of the randomness functions
+	if (entropyString1.length != 64 || entropyString2.length != 64 || entropyString3.length != 64 || entropyString2 == entropyString3) {
+		document.getElementById('newpassphrase').innerHTML = "Something is wrong! Please use counterwallet.io instead!";
+		return;		
+	}
+	var ppNum = [];
+	for (i = 0; i < 12; i++) {
+		var noise = entropyString1 + i + entropyString2 + i + entropyString3 + i;
+		var hash = CryptoJS.SHA256(noise);
+		Math.seedrandom(hash);
+		ppNum[i] = Math.floor(Math.random()*1626);
+	}
+	var passphrase = ppIntArrayToString(ppNum);
+	var addresses = genAddr(passphrase, NUM_ADDR_DISPLAY, false);
+	var output = "";
+	output += "<br>Your new passphrase is:<br><br>";
+	output += "<div class=\"boxWarning\">Keep these 12 words secret! If someone gets your passphrase, they gain access to your funds!</div>";
+	output += "<span class=\"monospaceBold\" style=\"font-size:160%;\">" + passphrase + "</span>";
+	output += "<br><br>The corresponding addresses are:<span class=\"monospace\"><br>";
+	for (i = 0; i < addresses.length; i++) {
+		output += "<br>#" + (i+1) + ": "+ addresses[i][0];
+	}
+	output += "</span>";
+	
+	//output = "<mark style=\"background-color:"+markColor+";\">"+passphrase+"</mark>";
+	document.getElementById('newpassphrase').innerHTML = output;
+}
+
+</script>
+</head>
+<body onload="drawMenus();firstEntropy();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">You do not need to remember the characters you enter.<br><br>In fact, the browser just wants a noisy input to help it generate a truly unpredictable passphrase.</div>
+<h1>Generate New Passphrase</h1>
+Enter 20+ random characters<br>
+<input type="password" onkeyup="validateInputPW()" id="password" placeholder="" style="width:545px;"><br>
+<div id="pwfeedback">&nbsp;</div>
+
+<button onclick="genPP()">Generate Passphrase</button>
+<div id="newpassphrase"></div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

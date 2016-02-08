@@ -1,0 +1,31 @@
+MENU_ITEMS = [
+	{ "category": "Wallet", "items": [
+		{ "file": "index.html", "name": "Balances", "author": "JP Janssen" },
+		{ "file": "multisend.html", "name": "Send Many", "author": "JP Janssen" }
+	]},
+	{ "category": "Assets", "items": [
+		{ "file": "registerasset.html", "name": "Register", "author": "JP Janssen" },
+		{ "file": "bulkregister.html", "name": "Bulk Register", "author": "JP Janssen" },
+		{ "file": "assetsearch.html", "name": "Search", "author": "JP Janssen" }
+	]},
+	{ "category": "Broadcast", "items": [
+		{ "file": "broadcastone.html", "name": "Single", "author": "JP Janssen" },
+		{ "file": "broadcastmany.html", "name": "Multi", "author": "JP Janssen" },
+		{ "file": "notarize.html", "name": "Notarize File", "author": "JP Janssen" }
+	]},
+	{  "category": "Passphrase", "items": [
+		{ "file": "generatepp.html", "name": "Generate New", "author": "JP Janssen" },
+		{ "file": "vanity.html", "name": "Vanity Address", "author": "JP Janssen" },
+		{ "file": "repairpp.html", "name": "Repair", "author": "JP Janssen" },
+		{ "file": "paperwallet.html", "name": "Paper Wallet", "author": "JP Janssen" },
+		{ "file": "export.html", "name": "Export Keys", "author": "JP Janssen" }
+	]},
+	{  "category": "Entertainment", "items": [
+		{ "file": "youtube.html", "name": "YouTube", "author": "JP Janssen" }
+	]},
+	{  "category": "Settings", "items": [
+		{ "file": "encrypt.html", "name": "Password", "author": "JP Janssen" },
+		{ "file": "settingsuser.html", "name": "Customize", "author": "JP Janssen" },
+		{ "file": "developer.html", "name": "Developer", "author": "JP Janssen" }
+	]}
+];

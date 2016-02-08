@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/pushtx.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script>
+//Three entopy sources; Two data generated and one user input
+entropyString1 = "";
+entropyString2 = "";
+entropyString3 = "";
+function randomHashInput() {
+	Math.seedrandom();
+	var d = new Date();
+    var n = d.getMilliseconds();
+	var randstring = d + Math.random() + n + Math.random() + Math.random();
+	randstring = CryptoJS.SHA256(randstring).toString();
+	return randstring;
+}
+function firstEntropy() {
+	entropyString1 = randomHashInput();
+}
+function secondEntropy() {
+	var pwInput = document.getElementById('password').value;
+	entropyString2 = CryptoJS.SHA256(pwInput).toString();
+}
+function thirdEntropy() {
+	entropyString3 = randomHashInput();
+}
+function validateInputPW() {
+	var pwInput = document.getElementById('password').value;
+	var output = "";
+	var markColor = "";
+		var score = scorePassword(pwInput);
+		score *= 1.8;
+		score = parseInt(score);
+		if (score > 100) {
+			score = 100;
+		}
+		output = "Strength: " + score + "%";
+		if (score < 50) {
+			markColor = "orangered ";
+		} else if (score < 65) {
+			markColor = "orange ";
+		} else if (score < 80) {
+			markColor = "yellow ";
+		} else if (score < 100) {
+			markColor = "greenyellow ";
+		} else {
+			markColor = "lime";
+		}
+	output = "<mark style=\"background-color:"+markColor+";\">"+output+"</mark>";
+	document.getElementById('pwfeedback').innerHTML = output;
+}
+iterations = 0;
+entorpySeed = '';
+patterns = [];
+patternsLen = [];
+patternsActive = [];
+startTime;
+difficulty;
+difficultyPrint = '';
+function genPP() {
+	var pwInput = document.getElementById('password').value;
+	patterns[1] = document.getElementById('pattern1').value;
+	patterns[2] = document.getElementById('pattern2').value;
+	patterns[3] = document.getElementById('pattern3').value;
+	var score = scorePassword(pwInput);
+	score *= 1.8;
+	score = parseInt(score);
+	if (score < 80) {
+		document.getElementById('newpassphrase').innerHTML = "Please type more random characters.";
+		return;
+	}
+	secondEntropy();
+	thirdEntropy();
+	entropySeed = entropyString1 + entropyString2 + entropyString3;
+	//this will catch some erroneous modifications of the randomness functions
+	if (entropyString1.length != 64 || entropyString2.length != 64 || entropyString3.length != 64 || entropyString2 == entropyString3 || entropySeed.length != 192) {
+		document.getElementById('newpassphrase').innerHTML = "Something is wrong! Please use counterwallet.io instead.";
+		return;		
+	}
+	if (patterns[1][0] != '1' || patterns[2][0] != '1' || patterns[3][0] != '1') {
+		document.getElementById('newpassphrase').innerHTML = "Error! Patterns must begin with '1'.";
+		return;
+	}
+	patterns[1] = patterns[1].substring(1);
+	patterns[2] = patterns[2].substring(1);
+	patterns[3] = patterns[3].substring(1);
+	patternsLen[1] = patterns[1].length;
+	patternsLen[2] = patterns[2].length;
+	patternsLen[3] = patterns[3].length;
+	
+	if (patternsLen[1] == 0) {
+		document.getElementById('newpassphrase').innerHTML = "Error! The first pattern is empty.";
+		return;
+	}
+	if(/^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/.test(patterns[1]) == false) {
+		document.getElementById('newpassphrase').innerHTML = "Error! Patterns cannot contain '0', 'O', 'l' or special characters.";
+		return;
+	}
+	if(patternsLen[2] > 0 && /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/.test(patterns[2]) == false) {
+		document.getElementById('newpassphrase').innerHTML = "Error! Patterns cannot contain '0', 'O', 'l' or special characters.";
+		return;
+	}
+	if(patternsLen[3] > 0 && /^[123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz]+$/.test(patterns[3]) == false) {
+		document.getElementById('newpassphrase').innerHTML = "Error! Patterns cannot contain '0', 'O', 'l' or special characters.";
+		return;
+	}
+	difficulty = 1;
+	for (i = 1; i <= 3; i++) {
+		if (patternsLen[i] > 0) {
+			//some first characters are much more likely. i found exact difficulties from vanitygen 
+			if (/[A-P7-9]/.test(patterns[i][0])) difficulty *= 22;
+			else if (/[Q]/.test(patterns[i][0])) difficulty *= 65;
+			else if (/[R-Za-z]/.test(patterns[i][0])) difficulty *= 1353;
+			else if (/[1]/.test(patterns[i][0])) difficulty *= 256;
+			else if (/[2-6]/.test(patterns[i][0])) difficulty *= 23;
+		}
+		for (j = 1; j < patternsLen[i]; j++) {
+			//later characters have usually prob ~1/58 but this is not always the case
+			difficulty *= 58;
+		}
+	}
+	difficultyPrint = difficulty.toString().replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+	if (difficultyPrint.length == 5) difficultyPrint = difficultyPrint.replace(",","");
+	if (difficulty > 30000) difficultyPrint = "<span style=\"color:Maroon;font-weight:bold;\">"+difficultyPrint+"</span>";
+	else if (difficulty > 3000) difficultyPrint = "<span style=\"color:FireBrick;\">"+difficultyPrint+"</span>";
+	
+	startTime = new Date().getTime();
+	iterations = 0;
+	document.getElementById('newpassphrase').innerHTML = "Searching...";
+	setTimeout(findPattern, 30);
+}
+function findPattern() {
+//function recursively calls itself until pattern found - potentially forever 
+	var bitcore = require('bitcore');
+	var adjind = new Uint32Array(4);
+	var ppind = [];
+	for (i = 0; i < 11; i++) {
+		var noise = i + entropySeed + iterations;	
+		var hash = CryptoJS.SHA256(noise);
+		Math.seedrandom(hash);
+		ppind[i] = Math.floor(Math.random()*1626);
+	}
+	for (i = 0; i < 10; i++) {
+		iterations += 1;
+		ppind[11] = i;
+		var res = '';
+		for (j=0; j < 4; j++) {
+			adjind[j] = ppind[3*j] +
+					1626 * (ppind[3*j+1] - ppind[3*j] - Math.floor((ppind[3*j+1] - ppind[3*j]) / 1626) * 1626) +
+					2643876 * (ppind[3*j+2] - ppind[3*j+1] - Math.floor((ppind[3*j+2] - ppind[3*j+1]) / 1626) * 1626);
+			res += ('00000000' + adjind[j].toString(16)).substr(-8);
+		}
+		var HDPrivateKey = bitcore.HDPrivateKey.fromSeed(res, bitcore.Networks.livenet);
+		var patternOK = true;
+		var derived = HDPrivateKey.derive("m/0'/0/0");
+		var address = bitcore.Address(derived.publicKey, bitcore.Networks.livenet);
+		if (patterns[1] != address.toString().substring(1,patternsLen[1]+1)) {
+			patternOK = false;
+		}
+		if (patternOK != false && patternsLen[2] > 0) {
+			var derived2 = HDPrivateKey.derive("m/0'/0/1");
+			var address2 = bitcore.Address(derived2.publicKey, bitcore.Networks.livenet);
+			if (patterns[2] != address2.toString().substring(1,patternsLen[2]+1)) {
+				patternOK = false;
+			}
+		}
+		if (patternOK != false && patternsLen[3] > 0) {
+			var derived3 = HDPrivateKey.derive("m/0'/0/2");
+			var address3 = bitcore.Address(derived3.publicKey, bitcore.Networks.livenet);
+			if (patterns[3] != address3.toString().substring(1,patternsLen[3]+1)) {
+				patternOK = false;
+			}
+		}
+		if (patternOK) {
+			outputPassphrase(ppIntArrayToString(ppind));
+			return;
+		}
+	}
+
+	var output = 'Searching...';
+	var endTime = new Date().getTime();
+	var execTime = Math.round((endTime - startTime) / 1000);
+	var execTimeMin = Math.floor(execTime / 60);
+	var execTimeSec = execTime % 60;
+	var execTimePrint = '';
+	if (execTimeMin == 0) {
+		execTimePrint = execTimeSec + " sec";
+	} else {
+		execTimePrint = execTimeMin + " min " + execTimeSec + " sec";
+	}
+	var iterationsPrint = iterations.toString();
+	if (iterationsPrint.length >= 5) iterationsPrint = iterationsPrint.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+	var searchRate = (iterations / execTime).toFixed(1);
+	//Poission distribution. E.g. difficulty 1,000,000.
+	//#iterations with 50% chance of (not) finding = (999,999/1,000,000)^x = 0.5  =>  x = 693,147  
+	//While you EXPECT to wait exp=Difficulty iterations, the MEDIAN wait time is exp*0.69315 iterations
+	//You never get "closer" to finding it. The median wait time does not change (in GUI it does but for another reason - if iteration speed changes) 
+	var medianWait = difficulty / (iterations / execTime) * 0.69315;
+	var medianWaitHrs = Math.floor(medianWait / 3600);
+	var medianWaitMin = Math.floor(medianWait / 60) % 60;
+	var medianWaitSec = Math.round(medianWait % 60);
+	var medianWaitPrint = '';
+	if (medianWaitHrs == 0 && medianWaitMin == 0) {
+		medianWaitPrint = medianWaitSec + " sec";
+	} else if (medianWaitHrs == 0) {
+		medianWaitPrint = medianWaitMin + " min " + medianWaitSec + " sec";
+	} else if (medianWaitHrs == 1) {
+		medianWaitPrint = "<span style=\"color:FireBrick;\">" + medianWaitHrs + " hr " + medianWaitMin + " min</span>";
+	} else {
+		medianWaitPrint = "<span style=\"color:Maroon;font-weight:bold;\">" + medianWaitHrs + " hrs</span> " + medianWaitMin + " min";
+	}	
+	output += "<br>Difficulty: " + difficultyPrint;
+	output += "<br>" + iterationsPrint + " passphrases tried in " + execTimePrint;
+	output += "<br>@ " + searchRate + " per second";
+	output += "<br>50% of finding passphrase in " + medianWaitPrint;
+	
+	document.getElementById('newpassphrase').innerHTML = output;
+	setTimeout(findPattern, 60);
+}
+function outputPassphrase(passphrase) {
+	var addresses = genAddr(passphrase, 3, false);
+	
+	var output = "";
+	output += "Success! Your new passphrase is:<br><br>";
+	output += "<div class=\"boxWarning\">Keep these 12 words secret! If someone gets your passphrase, they gain access to your funds!</div>";
+	output += "<span class=\"monospaceBold\" style=\"font-size:160%;\">" + passphrase + "</span>";
+	output += "<br><br>The corresponding addresses are:<span class=\"monospace\"><br>";
+	for (i = 0; i < addresses.length; i++) {
+		output += "<br>#" + (i+1) + ": "+ addresses[i][0];
+	}
+	output += "</span>";
+	
+	var endTime = new Date().getTime();
+	var execTime = Math.round((endTime - startTime) / 1000);
+	var execTimeMin = Math.floor(execTime / 60);
+	var execTimeSec = execTime % 60;
+	var execTimePrint = '';
+	if (execTimeMin == 0) {
+		execTimePrint = execTimeSec + " sec";
+	} else {
+		execTimePrint = execTimeMin + " min " + execTimeSec + " sec";
+	}
+	var iterationsPrint = iterations.toString();
+	if (iterationsPrint.length >= 5) iterationsPrint = iterationsPrint.replace(/(\d)(?=(\d{3})+$)/g, '$1,');
+	var searchRate = (iterations / execTime).toFixed(1);
+	output += "<br><br>The passphrase was found after " + iterationsPrint + " trials or " + execTimePrint;
+	output += "<br>@ " + searchRate + " per second";
+	
+	document.getElementById('newpassphrase').innerHTML = output;
+}
+
+
+</script>
+</head>
+<body onload="drawMenus();firstEntropy();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Passphrase with Vanity Addresses</h1>
+<div class="boxInfo">A vanity address starts with a special pattern.<br><br>E.g. you can specify that the 1st address starts with '123' or all three start with '1A'.</div>Enter Random Characters<br>
+<input type="password" onkeyup="validateInputPW()" id="password" placeholder="" style="width:545px;"><br>
+<div id="pwfeedback" style="margin:0px 0px 10px 0px;">&nbsp;</div>
+1st Pattern:<br>
+<input type="text" onkeyup="validateInputPW()" id="pattern1" value="1A" style="width:100px;"><br>
+2nd Pattern (Optional):<br>
+<input type="text" onkeyup="validateInputPW()" id="pattern2" value="1" style="width:100px;"><br>
+3rd Pattern (Optional):<br>
+<input type="text" onkeyup="validateInputPW()" id="pattern3" value="1" style="width:100px;"><br>
+
+<button onclick="genPP()">Search</button>
+<div id="newpassphrase"></div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

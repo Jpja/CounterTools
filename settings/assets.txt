@@ -1,0 +1,26 @@
+//Only display assets with balance above this
+MIN_BALANCE_DISPLAY = 0.00000001;
+
+//Display these assets first
+POPULAR_ASSETS = [
+	"BITCRYSTALS",
+	"GEMZ",
+	"SJCX",
+	"SCOTCOIN",
+	"TILECOINX",
+	"WOODSHARES",
+	"LTBCOIN",
+	"FLDC"
+];
+
+//Do not display these assets
+IGNORE_ASSETS = [
+	"A8285897447728690704"
+];
+
+//Assets with some negative feedback	
+CONTORVERSIAL_ASETS = [
+	"SWARM",
+	"A663355118899330088"
+];
+

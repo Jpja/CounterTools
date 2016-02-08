@@ -1,0 +1,26 @@
+<html>
+<body>
+<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+<script>
+function encrypt() {
+var message = document.getElementById('searchbox').value;
+var encrypted = CryptoJS.AES.encrypt(message, "Secret Passphrase");
+// AABsAABkAABiAAAAAAAAAABNAABlAABPAAC0AABHAAA=
+
+var decrypted = CryptoJS.AES.decrypt(encrypted, "Secret Passphrase");
+// 4d657373616765
+
+//document.write(encrypted);
+//document.write(decrypted.toString(CryptoJS.enc.Utf8));
+// Message
+document.getElementById('encrypted').innerHTML = "index.php?enc=U2FsdGVkX1" + encrypted.toString() + "<br />" + decrypted.toString(CryptoJS.enc.Utf8);
+}
+</script>
+
+
+<form>
+	  <input type="text" onkeyup="encrypt()" id="searchbox" placeholder="PASSWORD">
+</form>
+<div id="encrypted"></div>
+</body>
+</html>
