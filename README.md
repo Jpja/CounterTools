@@ -6,7 +6,7 @@ Download the zip file, extract the directory and open index.html. Follow instruc
 ## Features
 - Send BTC, XCP and assets
 - View BTC, XCP and asset balances
-- Counterwallet compatibile passphrase
+- Counterwallet compatible passphrase
 - Encrypt wallet
 - Send to an alias (converts to an asset owner address)
 - Send to many from a list
