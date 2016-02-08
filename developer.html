@@ -88,7 +88,7 @@ Design specific to your module should be added to the html's <code>head</code> s
 <h2>Passphrases, Addresses and Keys</h2>
 The passphrase is encrypted and can be decrypted only after the user submits the password.
 <pre><code>var decrypted = decryptPassword(password); //returns passphrase on success, else a number code
-if (!isNaN(decrypted)) //if passphrase decrypted ok</code></pre>
+if (isNaN(decrypted)) //if passphrase decrypted ok</code></pre>
 The user can choose how many addresses to display, but to avoid error it should never be more than the (12) pre generated ones.
 <pre><code>var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);</code></pre>
 If the passphrase is decrypted you can get an unlimited amount of addresses and private keys.
