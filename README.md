@@ -1,7 +1,7 @@
 # CounterTools
 CounterTools is a modular JavaScript Bitcoin and Counterparty GUI Wallet.
 
-Download the zip file, extract the directory and open index.html. Instructions are in the GUI.
+Download the zip file, extract the directory and open index.html. Follow instructions in the GUI.
 
 ## Features
 - Send BTC, XCP and assets
@@ -27,6 +27,36 @@ Download the zip file, extract the directory and open index.html. Instructions a
 - Customizable design, menu and modules
 - Developer guide
  
+## Use Cases
 
+### Wallet
+The wallet can be used out of the box. It is meant to complement Counterwallet, Chrome Wallet and IndieSquare. The same passphrase can be used in every wallet. The advantages of this wallet are
+- All files are stored locally
+- No installation (only edit a text file)
+- Can run from a USB drive or CD rom
+- Fees can be custom set
+- Can send to alias (asset owner)
+- Supports anchored assets
+- Quick links to block explorers
+The downsides
+- No DEX support
+- No history
+These are scheduled to appear shortly.
+
+### Toolbox
+- The send tools make it easy to send, register assets and make broadcasts from a text list.
+- The passphrase tools require no Internet access, thus is a safe way to generate keys.
+
+### Skeleton for other projects
+- Fork this project and make your own design.
+
+### Framework for 3rd party addons
+- Rename `template.html` and start building your own plugin immediately.
+- A module is all HTML5 and JavaScript
+- Find useful functions in `developer.html
+- Finally just add a reference to your module in `settings/menu.txt`
+
+### Library for other Counterparty projects
+- `lib/xcp-toolbox` contatins heaps of useful functions for passphrases, asset validations, API calls, etc
 
 
