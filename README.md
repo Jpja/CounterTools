@@ -29,7 +29,7 @@ Download the zip file, extract the directory and open index.html. Follow instruc
  
 ## Use Cases
 
-### Wallet
+#### Wallet
 The wallet can be used out of the box. It is meant to complement Counterwallet, Chrome Wallet and IndieSquare. The same passphrase can be used in every wallet. The advantages of this wallet are
 - All files are stored locally
 - No installation (only edit a text file)
@@ -41,20 +41,32 @@ The wallet can be used out of the box. It is meant to complement Counterwallet, 
 
 DEX support and history will be added shortly.
 
-### Toolbox
+#### Toolbox
 - The send tools make it easy to send, register assets and make broadcasts from a text list.
 - The passphrase tools require no Internet access, thus is a safe way to generate keys.
 
-### Skeleton for other projects
+#### Skeleton for other projects
 - Fork this project and make your own design.
 
-### Framework for 3rd party addons
+#### Framework for 3rd party addons
 - Rename `template.html` and start building your own plugin immediately.
 - A module is all HTML5 and JavaScript.
 - Find useful functions in `developer.html`.
 - Finally just add a reference to your module in `settings/menu.txt`.
 
-### Library for other Counterparty projects
+#### Library for other Counterparty projects
 - `lib/xcp-toolbox` contatins heaps of useful functions for passphrases, asset validations, API calls, etc.
+- `lib/chrome-wallet-mod` is a modified version of Chrome Wallet's library. Redundant API calls, error checks, and user feedback are added.
+
+## Credits
+- Joe Looney for his open source [Chrome Extension] (https://github.com/loon3/XCP-Wallet/tree/master/Chrome-Extension).
+- Blockscan for Counterparty APIs.
+- CounterpartyChain (CoinDaddy) for APIs.
+- And the thousands of contributors to codes that this project runs on.
+ 
+## Licence
+Free Public License 1.0.0
+Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
