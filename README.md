@@ -38,10 +38,8 @@ The wallet can be used out of the box. It is meant to complement Counterwallet, 
 - Can send to alias (asset owner)
 - Supports anchored assets
 - Quick links to block explorers
-The downsides
-- No DEX support
-- No history
-These are scheduled to appear shortly.
+
+DEX support and history will be added shortly.
 
 ### Toolbox
 - The send tools make it easy to send, register assets and make broadcasts from a text list.
