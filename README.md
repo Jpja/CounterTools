@@ -50,11 +50,11 @@ DEX support and history will be added shortly.
 
 ### Framework for 3rd party addons
 - Rename `template.html` and start building your own plugin immediately.
-- A module is all HTML5 and JavaScript
-- Find useful functions in `developer.html
-- Finally just add a reference to your module in `settings/menu.txt`
+- A module is all HTML5 and JavaScript.
+- Find useful functions in `developer.html`.
+- Finally just add a reference to your module in `settings/menu.txt`.
 
 ### Library for other Counterparty projects
-- `lib/xcp-toolbox` contatins heaps of useful functions for passphrases, asset validations, API calls, etc
+- `lib/xcp-toolbox` contatins heaps of useful functions for passphrases, asset validations, API calls, etc.
 
 
