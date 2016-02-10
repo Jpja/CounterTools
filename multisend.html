@@ -133,18 +133,13 @@ function validateAndSend() {
 	
 	//Send after timeout
 	document.getElementById('password').value = "";
-	document.getElementById('submit').disabled = true;
 	var timeNow = new Date();
 	for (var i = 0;i < sendInputs.length;i++){
 		var d = new Date();
 		d.setSeconds(d.getSeconds() + 1 + i*waitSecs);
 		var waitMs = Math.abs(d - timeNow);
-		setTimeout(sendXCP_opreturn, waitMs, address, receiveAddr[i], sendAsset[i], sendAmount[i], btcToReceiver, TX_FEE, decrypted);
+		setTimeout(sendXCP_opreturn, waitMs, address, receiveAddr[i], sendAsset[i], sendAmount[i], btcToReceiver, txFee, decrypted);
 	}
-	setTimeout(enableSubmitButton, 1 + sendInputs.length*waitSecs);
-}
-function enableSubmitButton() {
-	document.getElementById('submit').disabled = false;
 }
 </script>
 

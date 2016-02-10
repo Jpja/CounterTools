@@ -137,7 +137,7 @@ function validateAndSendBroadcast() {
 	decrypted = decrypted.toString(CryptoJS.enc.Utf8);
 	var output = "&nbsp;";
 	if (decrypted != "") {
-		document.getElementById("sendbroadcast").disabled = true; 
+		document.getElementById('password').value = "";
 		sendBroadcast(address, broadcastText, checksum, checksum2, MSIG_OUTPUT, TX_FEE, decrypted);
 	} else {
 		document.getElementById('sendfeedback').innerHTML = "Wrong password.";

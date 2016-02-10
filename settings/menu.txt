@@ -1,7 +1,8 @@
 MENU_ITEMS = [
 	{ "category": "Wallet", "items": [
 		{ "file": "index.html", "name": "Balances", "author": "JP Janssen" },
-		{ "file": "multisend.html", "name": "Send Many", "author": "JP Janssen" }
+		{ "file": "multisend.html", "name": "Send Many", "author": "JP Janssen" },
+		{ "file": "history.html", "name": "History", "author": "JP Janssen" }
 	]},
 	{ "category": "Assets", "items": [
 		{ "file": "registerasset.html", "name": "Register", "author": "JP Janssen" },
