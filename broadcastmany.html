@@ -34,7 +34,6 @@
 	
 <script>
 function prepareValues() {
-	document.getElementById("submit").disabled = false;
 	document.getElementById('bcvalue').value = 0;
 	document.getElementById('bcfeefraction').value = 0;
 	document.getElementById('waitsecs').value = 20;
@@ -99,6 +98,7 @@ function validateAndSendBroadcasts() {
 	}
 	output += "</pre>";
 	document.getElementById('broadcastplan').innerHTML = output;
+	document.getElementById('password').value = "";
 	
 	//Call broadcasts after timeout
 	var timeNow = new Date();

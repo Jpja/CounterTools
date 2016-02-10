@@ -67,7 +67,7 @@ function validateAndSendBroadcast() {
 	} else if (decrypted == "") {
 		document.getElementById('sendfeedback').innerHTML = "Wrong password.";
 	} else {
-		document.getElementById("submit").disabled = true; 
+		document.getElementById('password').value = "";
 		sendBroadcast(address, bcText, bcValue, bcFeeFraction, MSIG_OUTPUT, TX_FEE, decrypted);
 	}
 }

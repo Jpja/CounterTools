@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<!--<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>-->
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+<style>
+section table {
+	border-collapse: collapse;
+	width:100%;
+}
+section th {
+	background-color: Silver;
+}
+section td {
+	font-family: "Lucida Console", Monaco, monospace;
+}
+section th {
+	padding:4px 7px 4px 7px; /*top right bottom left*/
+	text-align:left;
+}
+section td {
+	padding:3px 7px 3px 7px; /*top right bottom left*/
+	text-align:left;
+}
+section #transactions th:nth-child(3) {
+    text-align:center;
+}
+section #transactions td:nth-child(3) {
+    text-align:right;
+}
+section #broadcasts th:nth-child(3) {
+    text-align:center;
+}
+section #broadcasts td:nth-child(3) {
+    text-align:right;
+}
+section #broadcasts th:nth-child(4) {
+    text-align:center;
+}
+section #broadcasts td:nth-child(4) {
+    text-align:right;
+}
+section tr:nth-child(even) {
+    background-color: PeachPuff;
+}
+section tr:nth-child(odd) {
+    background-color: LightBlue;
+}
+section a {
+	text-decoration:none;
+	color:inherit;
+}
+</style>
+	
+<script>
+function initalize() {
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"viewaddress\" onchange=\"showHistory()\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+	updateBoxInfo(MY_ADDR[0]);
+	showHistory(MY_ADDR[0]);
+}
+function showHistory() {
+	var e = document.getElementById("viewaddress");
+	var address = e.options[e.selectedIndex].text;
+	updateBoxInfo(address);
+	var output = '';
+	
+	var historyTx = getTransactionHistory(address);
+	output += "<h2>Latest Transactions</h2><table id=\"transactions\"><tr><th>Time</th><th>Type</th><th>Amount</th><th>Asset</th><th>To/From</th></tr>";
+	if (historyTx == '?') {
+		output += "<tr><td colspan=\"5\">API call failed. Please try again later.</td></tr>";
+	} else if (historyTx == 'none') {
+		output += "<tr><td colspan=\"5\">No transactions recorded</td></tr>";
+	} else {
+		var timeNow = new Date();
+		var today = timeNow.toDateString();
+		for(var i=0; i < historyTx.length; i++){
+			output += "<tr>";
+			//output += "<td>"+historyTx[i].block+"</td>";
+			var date = new Date(historyTx[i].time*1000);
+			if (date.toDateString() == today) {
+				output += "<td>"+date.toLocaleTimeString()+"</td>";
+			} else {
+				output += "<td>"+date.toLocaleDateString()+"</td>";
+			}
+			if (historyTx[i].amount > 0) {
+				output += "<td>Receive</td>";
+			} else {
+				output += "<td>Send</td>";
+			}
+			output += "<td>"+walletFormat(Math.abs(historyTx[i].amount))+"</td>";
+			output += "<td><a href=\"https://counterpartychain.io/asset/"+historyTx[i].asset+"\" target=\"_blank\">"+assetReadable(historyTx[i].asset,4,2,'..',10)+"</a></td>";
+			output += "<td><a href=\"http://blockscan.com/address?q="+historyTx[i].address+"\" target=\"_blank\">"+addressReadable(historyTx[i].address,5,2)+"</a></td>";
+			output += "</tr>";
+		}
+	}
+	output += "</table>";
+	
+	var historyBc = getBroadcastHistory(address);
+	output += "&nbsp;<br>&nbsp;<br><h2>Latest Broadcasts</h2><table id=\"broadcasts\"><tr><th>Time</th><th>Text</th><th>Value</th><th>Fee</th></tr>";
+	if (historyBc == '?') {
+		output += "<tr><td colspan=\"4\">API call failed. Please try again later.</td></tr>";
+	} else if (historyBc == 'none') {
+		output += "<tr><td colspan=\"4\">No broadcasts recorded</td></tr>";
+	} else {
+		var timeNow = new Date();
+		var today = timeNow.toDateString();
+		for(var i=0; i < historyBc.length; i++){
+			output += "<tr>";
+			//output += "<td>"+historyBc[i].block+"</td>";
+			var date = new Date(historyBc[i].time*1000);
+			if (date.toDateString() == today) {
+				output += "<td>"+date.toLocaleTimeString()+"</td>";
+			} else {
+				output += "<td>"+date.toLocaleDateString()+"</td>";
+			}
+			output += "<td>"+historyBc[i].text.substring(0,40)+"</td>";
+			output += "<td>"+walletFormat(historyBc[i].value)+"</td>";
+			output += "<td>"+(historyBc[i].fee*100).toFixed(2)+"%</td>";
+			output += "</tr>";
+		}
+	}
+	output += "</table>&nbsp;<br>&nbsp;<br>";
+	
+	
+	
+	document.getElementById('addresshistory').innerHTML = output;
+}
+function updateBoxInfo(address) {
+	var output =  "View the most recent transactions and broadcasts.<br><br>Go to <u><a href=\"http://blockscan.com/address?q="+address+"\" target=\"_blank\">Blockscan</a></u> or <u><a href=\"https://counterpartychain.io/address/"+address+"\" target=\"_blank\">Counterpartychain</a></u> for a more extensive history.";
+	document.getElementById('infobox').innerHTML = output;
+}
+
+</script>
+
+</head>
+<body onload="drawMenus();initalize();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo" id="infobox">&nbsp;</div>
+<h1>Address History</h1>
+
+Select Address<br>
+<span id="optionslist"></span><br>
+
+<div id="addresshistory">&nbsp;</div>
+
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

@@ -69,13 +69,13 @@ function validateAndSendBroadcast() {
 	if (descr.length > 22) {
 		document.getElementById('sendfeedback').innerHTML = "Description can max be 22 characters.";
 	} else if (descrAscii != descr) {
-		document.getElementById('sendfeedback').innerHTML = "Description contains non-ascii characters.<br>" + highlightDiffChars(bcText,textAscii);
+		document.getElementById('sendfeedback').innerHTML = "Description contains non-ascii character.<br>" + highlightDiffChars(bcText,textAscii);
 	} else if (isNaN(quantity) || quantity < 0) {
 		document.getElementById('sendfeedback').innerHTML = "Quantity must be a non-negative number.";
 	} else if (decrypted == "") {
 		document.getElementById('sendfeedback').innerHTML = "Wrong password.";
 	} else {
-		document.getElementById("submit").disabled = true; 
+		document.getElementById('password').value = "";
 		createIssuance(address, asset, quantity, divisible, descr, MSIG_OUTPUT, TX_FEE, decrypted);
 	}
 }
