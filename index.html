@@ -261,7 +261,7 @@ function drawQRCode(ind) {
 
 function viewBroadcastForm(ind) {
 	var tablecode = "<table><tr><td><form>";
-	tablecode += "Message (Max 32 Chars)<br><input type=\"text\" id=\"bcmessage"+ind+"\" placeholder=\"Message\" maxlength=\"32\" style=\"width:400px;\"><br>";
+	tablecode += "Message (Max 46 Chars)<br><input type=\"text\" id=\"bcmessage"+ind+"\" placeholder=\"Message\" maxlength=\"46\" style=\"width:400px;\"><br>";
 	tablecode += "Value (Optional) <br><input type=\"number\" id=\"bcvalue"+ind+"\" placeholder=\"0\" step=\"1\"><br>";
 	//tablecode += "Fee Fraction (Optional) <br><input type=\"number\" id=\"bcfeefraction"+ind+"\" placeholder=\"0\" min=\"0\" max=\"99\" step=\"1\"><br>";
 	tablecode += "Password<br><input type=\"password\" id=\"password"+ind+"\" placeholder=\"Password\"><br>";
@@ -281,8 +281,8 @@ function prepareBroadcast(ind) {
 	var textAscii = bcmessage.replace(/[^ -~]/gi, 'ƫ'); //replace with some very rare character
 	if (textAscii != bcmessage) {
 		document.getElementById('sendfeedback'+ind).innerHTML = "Message contains non-ascii characters.<br>" + highlightDiffChars(bcmessage,textAscii);
-	} else if (bcmessage.length > 32) {
-		document.getElementById('sendfeedback'+ind).innerHTML = "Message is more than 22 characters.";
+	} else if (bcmessage.length > 46) {
+		document.getElementById('sendfeedback'+ind).innerHTML = "Message is more than 46 characters.";
 	} else if (isNaN(bcvalue) || isNaN(bcfeefraction) || bcfeefraction < 0 || bcfeefraction > 42.94967295) {
 		//document.getElementById('sendfeedback'+ind).innerHTML = "Value must be a number and Fee Fraction must be numbers between 0 and 42.9.";
 		document.getElementById('sendfeedback'+ind).innerHTML = "Value must be a number.";
@@ -290,7 +290,7 @@ function prepareBroadcast(ind) {
 		document.getElementById('sendfeedback'+ind).innerHTML = "Wrong password.";
 	} else {
 		document.getElementById('password'+ind).value = "";
-		sendBroadcast(MY_ADDR[ind], bcmessage, bcvalue, bcfeefraction, MSIG_OUTPUT, TX_FEE, decrypted, 'sendfeedback'+ind);
+		sendBroadcast(MY_ADDR[ind], bcmessage, bcvalue, bcfeefraction, TX_FEE, decrypted, 'sendfeedback'+ind);
 	}
 }
 

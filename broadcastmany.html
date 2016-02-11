@@ -79,8 +79,8 @@ function validateAndSendBroadcasts() {
 	//return if any invalid value
 	for(var i = 0;i < bcInputs.length;i++){
 		var textAscii = bcTexts[i].replace(/[^ -~]/gi, 'ƫ'); //replace with some very rare character
-		if (bcTexts[i].length > 32) {
-			document.getElementById('sendfeedback').innerHTML = "Broadcast #"+ (i+1) +" is invalid<br>Max text length is 32 chars.";
+		if (bcTexts[i].length > 46) {
+			document.getElementById('sendfeedback').innerHTML = "Broadcast #"+ (i+1) +" is invalid<br>Max text length is 46 chars.";
 			return;
 		} else if (textAscii != bcTexts[i] || isNaN(bcValues[i]) || isNaN(bcFeeFractions[i]) || bcFeeFractions[i] < 0 || bcFeeFractions[i] > 42.94967295) {
 			document.getElementById('sendfeedback').innerHTML = "Broadcast #"+ (i+1) +" is invalid<br><i>" + highlightDiffChars(bcTexts[i],textAscii) +"/"+bcValues[i]+"/"+bcFeeFractions[i]+"</i>";
@@ -106,7 +106,7 @@ function validateAndSendBroadcasts() {
 		var d = new Date();
 		d.setSeconds(d.getSeconds() + 1 + i*waitSecs);
 		var waitMs = Math.abs(d - timeNow);
-		setTimeout(sendBroadcast, waitMs, address,  bcTexts[i], bcValues[i], bcFeeFractions[i], MSIG_OUTPUT, TX_FEE, decrypted);
+		setTimeout(sendBroadcast, waitMs, address,  bcTexts[i], bcValues[i], bcFeeFractions[i], TX_FEE, decrypted);
 	}
 }
 </script>
