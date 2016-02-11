@@ -70,7 +70,7 @@ function prepareBroadcast() {
 	if (sizeMB > 10) sizeMB = sizeMB.toFixed(0);
 	else sizeMB = sizeMB.toFixed(1);
 	
-	var broadcastText = '';
+	broadcastText = '';
 	if (includeName) broadcastText += fileNamePrint + ' ';
 	if (radioSelect == 0) broadcastText += fileShaHex;
 	else if (radioSelect == 1) broadcastText += fileShaB64;
