@@ -62,13 +62,15 @@ function validateAndSendBroadcast() {
 	var output = "&nbsp;";
 	if (textAscii != bcText) {
 		document.getElementById('sendfeedback').innerHTML = "Message contains non-ascii characters.<br>" + highlightDiffChars(bcText,textAscii);
+	} else if (bcText.length > 46) {
+		document.getElementById('sendfeedback').innerHTML = "Max text length is 46 chars.";
 	} else if (isNaN(bcValue) || isNaN(bcFeeFraction) || bcFeeFraction < 0 || bcFeeFraction > 42.94967295) {
 		document.getElementById('sendfeedback').innerHTML = "Value must be a number and Fee Fraction must be numbers between 0 and 42.9.";
 	} else if (decrypted == "") {
 		document.getElementById('sendfeedback').innerHTML = "Wrong password.";
 	} else {
 		document.getElementById('password').value = "";
-		sendBroadcast(address, bcText, bcValue, bcFeeFraction, MSIG_OUTPUT, TX_FEE, decrypted);
+		sendBroadcast(address, bcText, bcValue, bcFeeFraction, TX_FEE, decrypted);
 	}
 }
 </script>
@@ -83,8 +85,8 @@ function validateAndSendBroadcast() {
 <div class="boxInfo">A broadcast is a special transaction. Once sent it can never be deleted. A broadcast is linked to the sender's address.<br><br>You can issue and settle bets with broadcasts. That's what 'value' and 'fee fraction' are for.<br><br>However, broadcasts are more commonly used to engrave text on the blockchain.</div>
 <h1>Broadcast Text or Bet</h1>
 
-Message (Max 32 Chars)<br>
-<input type="text" id="bcmessage" maxlength="32" style="width:400px;"><br>
+Message (Max 46 Chars)<br>
+<input type="text" id="bcmessage" maxlength="46" style="width:400px;"><br>
 Value (Optional)<br>
 <input type="number" id="bcvalue" step="1" style="width:100px;"><br>
 Fee Fraction [0-42%] (Optional)<br>

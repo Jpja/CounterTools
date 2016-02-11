@@ -74,7 +74,8 @@ function prepareBroadcast() {
 	if (includeName) broadcastText += fileNamePrint + ' ';
 	if (radioSelect == 0) broadcastText += fileShaHex;
 	else if (radioSelect == 1) broadcastText += fileShaB64;
-	broadcastText = broadcastText.substring(0,32);
+	var broadcastTextOrig = broadcastText;
+	broadcastText = broadcastText.substring(0,46);
 	
 	//make broadcast value file size in bytes 
 	//followed by decimal sum of all characters in hex hash string 
@@ -119,8 +120,8 @@ function prepareBroadcast() {
 	output += "</pre>";
 	output += "Remember to keep an exact copy of the file. If you lose the file or make even a tiny change to it, the notarization will be worthless.<br>";
 	if (fileName.toLowerCase().indexOf(".zip") == -1) output += "If you plan on notarizing several files, it is a good idea to collect them all in a single zip file.<br>";
-	output += "The broadcast uses a truncated hash. Don't worry, it is still more than good enough.<br><br>";
-	output += "Broadcast from address:<br>";
+	if (broadcastTextOrig != broadcastText) output += "The broadcast uses a truncated hash. Don't worry, it is still more than good enough.<br>";
+	output += "<br>Broadcast from address:<br>";
 	output += "<select id=\"sendaddress\">"+optionsList+"</select><br>";
 	output += "Enter password:<br>";
 	output += "<input type=\"password\" id=\"password\" placeholder=\"PASSWORD\" style=\"width:200px;\"><br>";
@@ -138,7 +139,7 @@ function validateAndSendBroadcast() {
 	var output = "&nbsp;";
 	if (decrypted != "") {
 		document.getElementById('password').value = "";
-		sendBroadcast(address, broadcastText, checksum, checksum2, MSIG_OUTPUT, TX_FEE, decrypted);
+		sendBroadcast(address, broadcastText, checksum, checksum2, TX_FEE, decrypted);
 	} else {
 		document.getElementById('sendfeedback').innerHTML = "Wrong password.";
 	}
