@@ -157,7 +157,7 @@ function showHistory() {
 				output += "<td>"+date.toLocaleDateString()+"</td>";
 			}
 			output += "<td>"+historyBc[i].text.substring(0,46)+"</td>";
-			output += "<td>"+historyBc[i].value.toFixed(2)+"</td>";
+			output += "<td>"+displayNumber(historyBc[i].value, 2)+"</td>";
 			output += "<td>"+(historyBc[i].fee*100).toFixed(2)+"%</td>";
 			output += "</tr>";
 		}

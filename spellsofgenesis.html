@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<!--<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>-->
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+<style>
+.diy-slideshow{
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width:500px;
+}
+figure{
+  position: absolute;
+  opacity: 0;
+  transition: 1s opacity;
+}
+figcaption{
+  position: absolute;
+  font-family: sans-serif;
+  font-size: .9em;
+  bottom: 1.75em;
+  right: 50px;
+  padding: .25em;
+  color: #fff;
+  background: rgba(0,0,0, .5);
+  border-radius: 2px;
+}
+figcaption a{
+  color: #fff;
+}
+figure.show{
+  opacity: 1;
+  position: static;
+  transition: 1s opacity;
+}
+.next, .prev{
+  color: #fff;
+  position: absolute;
+  background: rgba(0,0,0, .6);
+  top: 50%;
+  z-index: 1;
+  font-size: 2em;
+  margin-top: -.75em;
+  opacity: .3;
+  user-select: none;
+}
+.next:hover, .prev:hover{
+  cursor: pointer;
+  opacity: 1;
+}
+.next{
+  right: 0;
+  padding: 10px 5px 15px 10px;
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+.prev{
+  left: 0;
+  padding: 10px 10px 15px 5px;
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+</style>
+	
+<script>
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+</script>
+
+</head>
+<body onload="drawMenus();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Spells of Genesis</h1>
+
+<div class="boxInfo" id="infobox">Spells of Genesis is a mobile game powered by Counterparty. Cards are helpful and help unlock levels during gameplay.<br><br>
+Like traditional trading cards, these cards are issued in limited quantities. Since they run on Counterparty they can be traded online on the DEX. Click on a card to view its DEX orderbook.<br><br>
+Some cards you can still buy brand new from the <a href="https://swapbot.tokenly.com/bot/spellsofgenesis/wherebcycard#choose">Tokenly Swapbot</a>.</div>
+Browse the Spells of Genesis cards. 
+
+<!--http://themarklee.com/2013/12/26/simple-diy-responsive-slideshow-made-html5-css3-javascript/-->
+<div class="diy-slideshow" id="slides"></div>  
+
+
+
+<script>
+(function(){
+
+	var cards = ["FDCARD","SJCXCARD","GEMZCARD","XCPCARD","ETHEREUMCARD","SATOSHICARD","CLEFCARD","GENESISCARD","SHUMAICARD","CNPCARD","SHAPESHIFTCD","RIPPLECARD","BLOCKSIZECD","ETHXCPCARD","BEARWHALECD","LTBCARD","ZAIFCARD","XAJIBASILAAR","XAJIJASPAAR","BAZAARCARD","XAJIARKETAAR","GOXCARD","XAJIYEREMAAR","MINERCARD","XAJIBESAAR","CARDAUGUR","BTCDRAGONCD","BCYDRAGON","CARDASTEMA","XAJIBOSS","CARDAIRBITZ","TALISMANCARD","DOGECOINCARD","SAPPHIRECARD","SGDARKNESS","RUBYCARD","BLOCKTRAILCD","WAGATECARD","EMERALDCARD","CARDAMBER","WHEREBCYCARD","GOBLINCARD","SATOSHILITE","SAYOSIATAX"];
+	cards = shuffle(cards);
+	var cardSupply = [];
+	for(var i=0; i < cards.length; i++){
+		var ind = assetListIndex(cards[i]);
+		if (ind == -1) cardSupply[i] = "?";
+		else cardSupply[i] = displayNumber(ASSET_LIST[ind][5],0);
+	}
+	var output = "";
+	for(var i=0; i < cards.length; i++){
+		if (i == 0) output += "<figure class=\"show\">";
+		else  output += "<figure>";
+		output += "<a href=\"https://xcpdex.com/"+cards[i]+"\" target=\"_blank\">";
+		output += "<img src=\"spellsofgenesis/"+cards[i]+".jpg\" width=\"100%\"></a>";
+		output += "<figcaption>"+cards[i]+" — Supply: "+cardSupply[i]+"</figcaption></figure>";
+	}
+	output += "<span class=\"prev\">&laquo;</span><span class=\"next\">&raquo;</span>";
+	document.getElementById('slides').innerHTML = output;
+
+  
+	var counter = 0, // to keep track of current slide
+    $items = document.querySelectorAll('.diy-slideshow figure'), // a collection of all of the slides, caching for performance
+    numItems = $items.length; // total number of slides
+
+// this function is what cycles the slides, showing the next or previous slide and hiding all the others
+var showCurrent = function(){
+  var itemToShow = Math.abs(counter%numItems);// uses remainder (aka modulo) operator to get the actual index of the element to show  
+  
+  // remove .show from whichever element currently has it 
+  // http://stackoverflow.com/a/16053538/2006057
+  [].forEach.call( $items, function(el){
+    el.classList.remove('show');
+  });
+  
+  // add .show to the one item that's supposed to have it
+  $items[itemToShow].classList.add('show');    
+};
+
+// add click events to prev & next buttons 
+document.querySelector('.next').addEventListener('click', function() {
+     counter++;
+     showCurrent();
+  }, false);
+
+document.querySelector('.prev').addEventListener('click', function() {
+     counter--;
+     showCurrent();
+  }, false);
+  
+})();  
+</script>
+
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>
