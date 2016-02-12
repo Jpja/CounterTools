@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<!--<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>-->
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+<style>
+section table {
+	border-collapse: collapse;
+	width:100%;
+}
+section th {
+	background-color: Silver;
+}
+section td {
+	font-family: "Lucida Console", Monaco, monospace;
+}
+section th {
+	padding:4px 7px 4px 7px; /*top right bottom left*/
+	text-align:left;
+}
+section td {
+	padding:3px 7px 3px 7px; /*top right bottom left*/
+	text-align:left;
+}
+section td:nth-child(4) {
+    text-align:right;
+}
+section  td:nth-child(5) {
+    text-align:right;
+}
+section th:nth-child(4) {
+    text-align:right;
+}
+section  th:nth-child(5) {
+    text-align:right;
+}
+section tr:nth-child(even) {
+    background-color: PeachPuff;
+}
+section tr:nth-child(odd) {
+    background-color: LightBlue;
+}
+</style>
+	
+<script>
+function initalize() {
+	setTimeout(buildTables, 100);
+}
+function buildTables() {
+	var contestants = [ 
+		["SoGParty", "1JCWDtW76JrxwHwnmKXGoxi1GP7jk8m37K", 0 ,0],
+		["XCP Wallet", "1DTmJxVP2RWkTuGNBmwEqBV1ukaXr27Yib", 0 ,0],
+		["XCP DEX", "19jUemChVcQ66vVATVd9fwBqfAhPgRsd15", 0 ,0],
+		["CounterTools", "14G8brfiSQzAzpwRdwumCUHdWR3AnK4Eum", 0 ,0],
+		["ONOMA", "1L338fGqCjfS91EyjDAQ7kNr7RYTcB7K6M", 0 ,0]
+	]
+	
+	var apiOK = true;
+	for (var i = 0; i < contestants.length; i++) {
+		var balances = getAssetBalances(contestants[i][1]);
+		if (balances == '?' || balances == 'none') {
+			apiOK = false;
+		} else {
+			for (var j = 0; j < balances.length; j++) {
+				if (balances[j].asset == "DEVPANEL") {
+					contestants[i][2] = balances[j].balance;
+				} else if (balances[j].asset == "DEVPARTY") {
+					contestants[i][3] = balances[j].balance;
+				}
+			}
+		}	
+	}
+	
+	var sumDevpanel = 0;
+	var sumDevparty = 0;
+	for (var i = 0; i < contestants.length; i++) {
+		sumDevpanel += contestants[i][2];
+		sumDevparty += contestants[i][3];
+	}
+	
+	//Draw DEVPANEL table
+	contestants.sort(
+		function(a,b) {
+		if (a[2] == b[2])
+		return a[0] < b[0] ? -1 : 1;
+		return a[2] < b[2] ? 1 : -1;
+		}
+	);
+	var devpanelTable = "API fail";
+	if (apiOK) {
+		devpanelTable = "<table><tr><th>Rank</th><th>Project</th><th>Vote Address</th><th>Votes</th><th>Percent</th></tr>";
+		for (var i = 0; i < contestants.length; i++) {
+			devpanelTable += "<tr><td>"+i+"<td>"+contestants[i][0]+"</td><td>"+contestants[i][1]+"</td><td>"+contestants[i][2].toFixed(2)+"</td><td>"+(100*contestants[i][2]/sumDevpanel).toFixed(0)+"%</td></tr>";
+		}
+		devpanelTable += "</table>";
+	}
+	document.getElementById('byjudges').innerHTML = devpanelTable;
+	
+	//Draw DEVPARTY table
+	contestants.sort(
+		function(a,b) {
+		if (a[3] == b[3])
+		return a[0] < b[0] ? -1 : 1;
+		return a[3] < b[3] ? 1 : -1;
+		}
+	);
+	var devpartyTable = "API fail";
+	if (apiOK) {
+		devpartyTable = "<table><tr><th>Rank</th><th>Project</th><th>Vote Address</th><th>Votes</th><th>Percent</th></tr>";
+		for (var i = 0; i < contestants.length; i++) {
+			devpartyTable += "<tr><td>"+(i+1)+"<td>"+contestants[i][0]+"</td><td>"+contestants[i][1]+"</td><td>"+contestants[i][3].toFixed(2)+"</td><td>"+(100*contestants[i][3]/sumDevparty).toFixed(0)+"%</td></tr>";
+		}
+		devpartyTable += "</table>";
+	}
+	document.getElementById('bycommunity').innerHTML = devpartyTable;
+}
+
+
+</script>
+
+</head>
+<body onload="drawMenus();initalize();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Devparty Scoreboard</h1>
+
+<b>CounterTools</b> was built for the <a href="https://counterparty.io/news/introducing-devparty-projects-and-announcing-the-start-of-the-voting-period/">Devparty contest</a>.<br><br>
+You may have DEVPARTY voting tokens. These were sent to the most active addresses. Casting a vote is a sure way to let the developer know his efforts are appreciated ;)<br><br>
+
+Below are tables of votes so far. The first is compromised of votes from seven judges selected by the Counterparty Foundation.<br>
+<i>Votes can be cast until February 16th.</i>
+<h2>Votes by 7 Judges</h2>
+<span id="byjudges"></span><br>
+
+<h2>Votes by Community</h2>
+<span id="bycommunity"></span><br>
+
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

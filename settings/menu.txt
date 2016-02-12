@@ -21,8 +21,9 @@ MENU_ITEMS = [
 		{ "file": "paperwallet.html", "name": "Paper Wallet", "author": "JP Janssen" },
 		{ "file": "export.html", "name": "Export Keys", "author": "JP Janssen" }
 	]},
-	{  "category": "Entertainment", "items": [
-		{ "file": "youtube.html", "name": "YouTube", "author": "JP Janssen" }
+	{  "category": "Misc", "items": [
+		{ "file": "youtube.html", "name": "YouTube", "author": "JP Janssen" },
+		{ "file": "devparty.html", "name": "Devparty Votes", "author": "JP Janssen" }
 	]},
 	{  "category": "Settings", "items": [
 		{ "file": "encrypt.html", "name": "Password", "author": "JP Janssen" },
