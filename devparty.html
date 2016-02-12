@@ -127,7 +127,7 @@ function buildTables() {
 	if (apiOK) {
 		devpanelTable = "<table><tr><th>Rank</th><th>Project</th><th>Vote Address</th><th>Votes</th><th>Percent</th></tr>";
 		for (var i = 0; i < contestants.length; i++) {
-			devpanelTable += "<tr><td>"+i+"<td>"+contestants[i][0]+"</td><td>"+contestants[i][1]+"</td><td>"+contestants[i][2].toFixed(2)+"</td><td>"+(100*contestants[i][2]/sumDevpanel).toFixed(0)+"%</td></tr>";
+			devpanelTable += "<tr><td>"+(i+1)+"<td>"+contestants[i][0]+"</td><td>"+contestants[i][1]+"</td><td>"+contestants[i][2].toFixed(2)+"</td><td>"+(100*contestants[i][2]/sumDevpanel).toFixed(0)+"%</td></tr>";
 		}
 		devpanelTable += "</table>";
 	}
