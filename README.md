@@ -8,7 +8,7 @@ Download the zip file, extract the directory and open index.html. Follow instruc
 - View BTC, XCP and asset balances
 - Counterwallet compatible passphrase
 - Encrypt wallet
-- Send to an alias (converts to an asset owner address)
+- Send to an alias (converts to asset owner address)
 - Send to many from a list
 - Send any amount of BTC together with asset
 - Register alphabetic or numeric asset
@@ -22,7 +22,7 @@ Download the zip file, extract the directory and open index.html. Follow instruc
 - Generate passphrase with vanity addresses
 - Repair a broken passphrase
 - Generate paper wallet
-- Export keys (all passphrase tools can be done on offline computer)
+- Export keys (all passphrase tools can be used on offline computer)
 - YouTube module with relevant Counterparty videos
 - Customizable design, menu and modules
 - Developer guide
@@ -50,7 +50,7 @@ DEX support and history will be added shortly.
 
 #### Framework for 3rd party addons
 - Rename `template.html` and start building your own plugin immediately.
-- A module is all HTML5 and JavaScript.
+- A module is only HTML5 and JavaScript.
 - Find useful functions in `developer.html`.
 - Finally just add a reference to your module in `settings/menu.txt`.
 
