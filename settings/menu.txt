@@ -23,8 +23,7 @@ MENU_ITEMS = [
 	]},
 	{  "category": "Misc", "items": [
 		{ "file": "youtube.html", "name": "YouTube", "author": "JP Janssen" },
-		{ "file": "spellsofgenesis.html", "name": "Spells of Genesis", "author": "JP Janssen" },
-		{ "file": "devparty.html", "name": "Devparty Votes", "author": "JP Janssen" }
+		{ "file": "spellsofgenesis.html", "name": "Spells of Genesis", "author": "JP Janssen" }
 	]},
 	{  "category": "Settings", "items": [
 		{ "file": "encrypt.html", "name": "Password", "author": "JP Janssen" },
