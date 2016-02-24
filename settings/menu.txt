@@ -15,7 +15,6 @@ MENU_ITEMS = [
 		{ "file": "notarize.html", "name": "Notarize File", "author": "JP Janssen" }
 	]},
 	{  "category": "Passphrase", "items": [
-		{ "file": "generatepp.html", "name": "Generate New", "author": "JP Janssen" },
 		{ "file": "vanity.html", "name": "Vanity Address", "author": "JP Janssen" },
 		{ "file": "repairpp.html", "name": "Repair", "author": "JP Janssen" },
 		{ "file": "paperwallet.html", "name": "Paper Wallet", "author": "JP Janssen" },
@@ -26,7 +25,7 @@ MENU_ITEMS = [
 		{ "file": "spellsofgenesis.html", "name": "Spells of Genesis", "author": "JP Janssen" }
 	]},
 	{  "category": "Settings", "items": [
-		{ "file": "encrypt.html", "name": "Password", "author": "JP Janssen" },
+		{ "file": "getstarted.html", "name": "Get Started", "author": "JP Janssen" },
 		{ "file": "settingsuser.html", "name": "Customize", "author": "JP Janssen" },
 		{ "file": "developer.html", "name": "Developer", "author": "JP Janssen" }
 	]}

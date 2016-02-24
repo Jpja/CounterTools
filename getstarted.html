@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	
+<script>
+/*It is absolutely essential that the same passphrase is never generated twice.
+The randomizer must be completely unpredictable.
+Entropy from
+    *Default random number generator
+    *Seedrandom - https://github.com/davidbau/seedrandom
+    *Current time and locale time setting
+    *Time to execute (fraction of ms)
+Seedrandom is supposed to be good enough, the others just add some additional entropy
+*/
+var entropyString1 = "";
+var entropyString2 = "";
+var entropyString3 = "";
+function firstEntropy() {
+    var d = new Date();
+    var n = d.getMilliseconds();
+	entropyString1 = d + n + Math.random() + Math.random();
+}
+function secondEntropy() {
+	Math.seedrandom();
+	var d = new Date();
+    var n = d.getMilliseconds();
+	entropyString2 = d + Math.random() + n + Math.random() + Math.random();
+}
+function thirdEntropy() {
+    var d = new Date();
+	entropyString3 = d.toLocaleString() + String(performance.now());
+}
+function validateInputPW() {
+	var pwInput = document.getElementById('password').value;
+	var output = "";
+	var markColor = "";
+	var score = scorePassword(pwInput);
+	score *= 1.7;
+	score = parseInt(score);
+	if (score > 100) {
+		score = 100;
+	}
+	output = "Strength: " + score + "%";
+	if (score < 50) {
+		markColor = "orangered ";
+	} else if (score < 65) {
+		markColor = "orange ";
+	} else if (score < 80) {
+		markColor = "yellow ";
+	} else if (score < 100) {
+		markColor = "greenyellow ";
+	} else {
+		markColor = "lime";
+	}
+	if (score < 100) {
+		output = "<mark style=\"background-color:"+markColor+";\">"+output+"</mark>";
+	} else {
+		output = "<mark style=\"background-color:"+markColor+";\">Randomness OK</mark>";
+	}
+	document.getElementById('pwfeedback').innerHTML = output;
+}
+function genPP() {
+	secondEntropy();
+    thirdEntropy();
+	//this will catch some erroneous modifications of the randomness functions
+	if (entropyString1.length < 20 || entropyString2.length < 20 || entropyString3.length < 20 || entropyString1 == entropyString2 || entropyString2 == entropyString3) {
+		document.getElementById('newpassphrase').innerHTML = "Something is wrong! Please use counterwallet.io instead!";
+		return;		
+	}
+	var ppNum = [];
+	for (var i = 0; i < 12; i++) {
+		var noise = entropyString1 + i + entropyString2 + i + entropyString3 + i;
+		var hash = CryptoJS.SHA256(noise);
+		Math.seedrandom(hash);
+		ppNum[i] = Math.floor(Math.random()*1626);
+	}
+	var passphrase = ppIntArrayToString(ppNum);
+    if (passphrase.length > 84) {
+        genPP();
+        return;
+        /*There's a small chance that the passphrase is really long.
+        Start over again when this is the case.
+        Technically this reduces entropy, but this effect is negligible.
+        The advantages are that the passphrase is guaranteed to fit the text box, faster to write down and easier to type.*/
+    }
+	var addresses = genAddr(passphrase, NUM_ADDR_DISPLAY, false);
+	var output = "";
+	output += "<br>Your new passphrase is:<br><br>";
+	output += "<div class=\"boxWarning\">Keep these 12 words secret! If someone gets your passphrase, they gain access to your funds!</div>";
+	output += "<span class=\"monospaceBold\" style=\"font-size:160%;\">" + passphrase + "</span>";
+	output += "<br><br>The corresponding addresses are:<span class=\"monospace\"><br>";
+	for (var i = 0; i < addresses.length; i++) {
+		output += "<br>#" + (i+1) + ": "+ addresses[i][0];
+	}
+	output += "</span>";
+	
+	//output = "<mark style=\"background-color:"+markColor+";\">"+passphrase+"</mark>";
+	document.getElementById('passphrase').value = passphrase;
+}
+function genPW() {
+	secondEntropy();
+    thirdEntropy();
+	//this will catch some erroneous modifications of the randomness functions
+	if (entropyString1.length < 20 || entropyString2.length < 20 || entropyString3.length < 20 || entropyString1 == entropyString2 || entropyString2 == entropyString3) {
+		return;		
+	}
+	var noise = entropyString1 + entropyString2 + entropyString3;
+    var hash = CryptoJS.SHA256(noise);
+    hash = CryptoJS.enc.Base64.stringify(hash);
+    hash = hash.replace(/O/g, "?");
+    hash = hash.replace(/0/g, "$");
+    hash = hash.replace(/I/g, "#");
+    hash = hash.replace(/l/g, "@");
+    hash = hash.replace(/\//g, "&");
+    hash = hash.replace(/i/g, "%");
+    hash = hash.replace(/h/g, "=");
+    var pw = '';
+    for (var i=0; i < 36; i++) {
+        pw = hash.substr(i,7);
+        if (pw.match(/[1-9]/i) && pw.match(/[+?$#@&%=]/i)) {
+            break;
+        }
+    }
+	/*The password is (almost) 42 bit (64^7 = 2^42).
+    This may be crackable, but 
+    the attacker must first have access to the password file stored locally
+    and then spend time and electricity cracking the password.
+    If the attacker has come this far, it would be easier for him just to
+    change the wallet's source code.
+    A longer password is also impractical.
+    For most users it may even make sense to reduce the length to
+    6 characters (36 bit) */
+	document.getElementById('password').value = pw;
+}
+function testCrackPW() {
+    /*A test to see how fast a password can be brute forced.
+    2000 passwords/sec on my system.
+    => 70 years to try 2^42 combinations.
+    Note that a much, much faster algorithm is likely possible.
+    Yet, even with a thousand times faster cracking it takes 25 days.
+    Since the attacker must 1) have access to your local file and 2) attack
+    your file individually, it is unlikely that he will bother brute forcing */
+    var numIterations = 2000;
+    var dStart = new Date().getTime();
+    var encrypted = CryptoJS.AES.encrypt("crash sky early blade mark north steal play touch accident lesson bullet", "password");
+    var cracked = false;
+    for (var i=0; i < numIterations; i++) {
+        var decrypted = CryptoJS.AES.decrypt(encrypted, String(i));
+        if(decrypted.toString() != "") cracked = true;
+    }
+    var dEnd = new Date().getTime();
+    alert(numIterations + ' passwords tried in: ' + (dEnd - dStart) + ' ms');
+}
+function testLongPP() {
+    /*A test to see how many passphrase are really long
+    */
+    var numIterations = 50000;
+    var maxLen = 84;
+    var longPPcount = 0;
+    var ppNum = [];
+    for (var j = 0; j < numIterations; j++) {
+        for (var i = 0; i < 12; i++) {
+            ppNum[i] = Math.floor(Math.random()*1626);
+        }
+        var passphrase = ppIntArrayToString(ppNum);
+        if (passphrase.length > maxLen) {
+            longPPcount += 1;
+        }
+    }
+    alert((100*longPPcount/numIterations).toFixed(1) + '% of passphrases are longer than ' + maxLen + ' characters.');
+}
+function encryptAndGenCode() {
+	var ppInput = document.getElementById('passphrase').value;
+	var pwInput = document.getElementById('password').value;
+	var ppClean = cleanPPformat(ppInput);
+	var output = "";
+	if (!isValidPP(ppClean)) {
+        var ppRepaired = repairPP(ppClean);
+        var ppHighlighted = highlightDiffWords(ppRepaired, ppClean);
+		output = "Entered passphrase is not valid.<br><i>" + ppHighlighted + "</i>";
+	} else if (pwInput.length == 0) {
+		output = "<i>Please enter a password under <b>Step 2</b>.</i>";
+	} else {
+		var encrypted = CryptoJS.AES.encrypt(ppClean, pwInput);
+		var addresses = genAddr(ppClean,12);
+		output = "<b>Success!</b> Encrypted wallet has been generated.<br>To save it you need to:<br><br>* Copy the below code.<br>* Open the file <code>settings/encryptedpp.txt</code> in a text editor.<br>* Replace the existing text with this code.<br>* Save the file.<br><br><pre style=\"background-color:Silver;font-size:9px;\"><code>MY_ENC_PP = '"+encrypted+"';\nMY_ADDR = ['"+addresses[0][0]+"',\n\t'"+addresses[1][0]+"',\n\t'"+addresses[2][0]+"',\n\t'"+addresses[3][0]+"',\n\t'"+addresses[4][0]+"',\n\t'"+addresses[5][0]+"',\n\t'"+addresses[6][0]+"',\n\t'"+addresses[7][0]+"',\n\t'"+addresses[8][0]+"',\n\t'"+addresses[9][0]+"',\n\t'"+addresses[10][0]+"',\n\t'"+addresses[11][0]+"'];</code></pre>";
+    }
+	
+	document.getElementById('walletdetails').innerHTML = output;
+}
+    
+</script>
+</head>
+<body onload="drawMenus();firstEntropy();genPP();genPW();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<h1>Make a New Wallet</h1>
+<h2>Step 1 - Passphrase</h2>
+Your wallet needs a seed - a 12 word passphrase.<br><br>
+The passphrase backs up your wallet. Write it down on a piece of paper and never reveal it to anyone.<br><br>
+    
+    <b>This is your passphrase</b><br>
+<input type="text" onkeyup="validateInputPW()" id="passphrase" placeholder="12 Word Passphrase" style="width:98%;color:firebrick;"><br>
+    <i>If you all ready have a passphrase from Counterwallet, Tokenly Pockets, Chrome Wallet or Indie Square, you can use it instead. Enter your old passphrase above before continuing with Step 2.</i>
+    
+<h2>Step 2 - Password</h2>
+Every wallet action requires a password. It is recommended that you keep the suggested password, but you are free to change it to whatever you like.<br><br>
+    <b>This is your password</b><br>
+<input type="text" onkeyup="validateInputPW()" id="password" placeholder="Password" style="width:200px;color:firebrick;"><br>
+ 
+<h2>Step 3 - Understand Risks</h2>
+
+A strong password is not sufficient. If an attacker gets access to your computer, he can alter the source code and steal your funds that way. Make sure your system is safe. For some added protection you can store the wallet on a usb drive or cd rom.<br><br>
+
+Key logging or screen capturing software can also compromise your wallet.<br><br>
+    
+Software bugs may also lead to loss of funds.<br><br>
+    
+This software comes with no warranty. Use at own risk.<br><br>
+    
+<button onclick="encryptAndGenCode();">I understand. Proceed anyway.</button>
+       
+<h2>Step 4 - Save Wallet</h2>
+<div id="walletdetails"><i>Click button to generate wallet files.</i></div>
+    
+<h2>Step 5 - Customize Wallet</h2>
+You can adjust fees, change colors, add or remove modules from the menu, and much more. Go to <a href="settingsuser.html">User Settings</a> for a complete guide.
+    
+<h2>Step 6 - Add Funds</h2>
+To use Counterparty you need a small amount of Bitcoin. One dollar's worth of BTC will get you far.<br><br>
+CounterTools displays your addresses in the <a href="index.html">Balance View</a>, just like in any regular Bitcoin wallet <br><br>
+Counterparty tokens can also be sent to and from your Bitcoin addresses.<br>
+    &nbsp;<br>&nbsp;
+    
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>
