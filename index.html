@@ -47,7 +47,7 @@ function drawWallet() {
 	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
 	
 	var tablecode = "<table id=\"walletbalances\">";
-	if (MY_ADDR[0] == "1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK") tablecode += "<tr><td style=\"background-color:orange;padding:8px;text-align:center;border:2px solid black;\" colspan=\"2\"><b>This is a DEMO wallet</b><br>To create your own wallet you must first <a href=\"generatepp.html\">generate</a> and <a href=\"encrypt.html\">encrypt</a> a passphrase.</td></tr><tr><td colspan=\"2\">&nbsp;</td></tr>";
+	if (MY_ADDR[0] == "1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK") tablecode += "<tr><td style=\"background-color:orange;padding:8px;text-align:center;border:2px solid black;\" colspan=\"2\"><b>This is a DEMO wallet</b><br><a href=\"getstarted.html\">Get started - Create your own wallet</a></td></tr><tr><td colspan=\"2\">&nbsp;</td></tr>";
 	for (i = 0; i < numAddr; i++) {
 		tablecode += "<tr class=\"traddr\"><td>#"+(i+1)+" "+MY_ADDR[i]+"</td><td class=\"cellicons\" id=\"icons"+i+"\"></td></tr>";
 		tablecode += "<tr class=\"trbtc\"><td class=\"cellassetid\">BTC</td><td class=\"cellbalance\" id=\"btcbalance"+i+"\"></td></tr>";
