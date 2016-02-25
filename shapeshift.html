@@ -39,19 +39,64 @@
 	<script src="lib/anchorme/anchorme.min.js"></script>
 	<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
 
-<script>
     
+<script>
+    function prepare() {
+        getRates();
+        setTimeout(printPrices, 3000);
+        
+    }
+    var rates = {btc_xcp:"?", xcp_btc:"?", btc_bcy:"?", bcy_btc:"?", btc_gemz:"?", gemz_btc:"?"};
+    var btcPrice = '?';
+    var myBalances = {btc:"?", xcp:"?", bcy:"?", gemz:"?"};
+    function getRates() {
+        for (var key in rates) {
+           try {
+            jsondata = jsonFromURL("https://shapeshift.io/rate/" + key);
+            if (jsondata == "-1") throw "shapeshift api does not work";
+            rates[key] = Number(jsondata['rate']);
+           } catch(err) {}
+        }
+        btcPrice = getPrice('BTC');
+        myBalances.btc = getBalance(MY_ADDR[0],'BTC');
+        myBalances.xcp = getBalance(MY_ADDR[0],'XCP');
+        myBalances.bcy = getBalance(MY_ADDR[0],'BITCRYSTALS');
+        myBalances.gemz = getBalance(MY_ADDR[0],'GEMZ');
+    }
+    function printPrices() {
+        document.getElementById('buyxcp').innerHTML = (1 / rates.btc_xcp) * btcPrice.usd;
+        document.getElementById('sellxcp').innerHTML = rates.xcp_btc * btcPrice.usd;
+        document.getElementById('buybcy').innerHTML = (1 / rates.btc_bcy) * btcPrice.usd;
+        document.getElementById('sellbcy').innerHTML = rates.bcy_btc * btcPrice.usd;
+        document.getElementById('buygemz').innerHTML = (1 / rates.btc_gemz) * btcPrice.usd;
+        document.getElementById('sellgemz').innerHTML = rates.gemz_btc * btcPrice.usd;
+    }
 </script>
-
 </head>
-<body onload="drawMenus();">
+<body onload="drawMenus();prepare();">
 <div id="container">
 <header id="topHeader"></header>
 <nav id="leftMenu"></nav>
 <section id="mainSection">
 
-<!--Main content-->
-<h1>Header</h1>
+<h1>ShapeShift</h1>
+ShapeShift lets you qiickly buy and sell XCP and some other Counterparty tokens. 
+    
+    <table>
+        <tr>
+            <td>Buy XCP</td><td id="buyxcp"></td>
+        </tr><tr>
+            <td>Sell XCP</td><td id="sellxcp"></td>
+        </tr><tr>
+            <td>Buy BitCrystals</td><td id="buybcy"></td>
+        </tr><tr>
+            <td>Sell BitCrystals</td><td id="sellbcy"></td>
+        </tr><tr>
+            <td>Buy GEMZ</td><td id="buygemz"></td>
+        </tr><tr>
+            <td>Sell GEMZ</td><td id="sellgemz"></td>
+        </tr>
+    </table>
 
 </section>
 <footer id="bottomFooter"></footer>
