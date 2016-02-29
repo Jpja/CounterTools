@@ -50,6 +50,14 @@ function prepareValues() {
 	}
 	optionsList += "</select>";
 	document.getElementById('optionslist').innerHTML = optionsList;
+    
+    //pre fill some  values for easier testing
+    document.getElementById('feedaddress').value = "1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK";
+    var deadline = Math.floor((new Date()).getTime() / 1000);
+    deadline += 3600 * 24 * 5 //5 days from now
+    deadline = Math.ceil(deadline/30000)*30000; //increment of 30k (~8 hr) because useually you want same deadline
+    document.getElementById('deadline').value = deadline;
+    document.getElementById('target').value = 1;
 }
 function validateAndSendBet() {
 	var feedAddress = document.getElementById('feedaddress').value;
@@ -64,7 +72,7 @@ function validateAndSendBet() {
 	var password = document.getElementById("password").value;
 	var decrypted = decryptPassword(password); //returns passphrase on success, else a number code
     if (isNaN(decrypted)) {
-        sendBet_opreturn_bitpay(address, feedAddress, betType, deadline, wager, counterwager, expiration, target, TO_RECEIVER, TX_FEE, decrypted);
+        sendBet_opreturn(address, feedAddress, betType, deadline, wager, counterwager, expiration, target, TO_RECEIVER, TX_FEE, decrypted);
     }
     document.getElementById('password').value = "";
 }
