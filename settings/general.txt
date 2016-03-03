@@ -5,4 +5,4 @@ TX_FEE = 		0.00010000;	//total btc transaction fee; lower than 0.00004000 not re
 TO_RECEIVER = 	0.00005470; //total btc to receiving address
 MSIG_OUTPUT = 	0.00007800; //total btc to multisig output (returned to sender)
 ADDR_IN_HEADER = 'false'; //set 'true' to display addresses in upper right corner
-API_TIMEOUT_MS = 2700; //wait ms before trying backup api. currently only for pushing tx's
+API_TIMEOUT_MS = 2800; //wait ms before trying backup api. currently only for pushing tx's
