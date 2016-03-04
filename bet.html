@@ -58,6 +58,7 @@ function prepareValues() {
     deadline = Math.ceil(deadline/30000)*30000; //increment of 30k (~8 hr) because useually you want same deadline
     document.getElementById('deadline').value = deadline;
     document.getElementById('target').value = 1;
+    formatDeadline();
 }
 function validateAndSendBet() {
 	var feedAddress = document.getElementById('feedaddress').value;
@@ -75,6 +76,11 @@ function validateAndSendBet() {
         sendBet_opreturn(address, feedAddress, betType, deadline, wager, counterwager, expiration, target, TO_RECEIVER, TX_FEE, decrypted);
     }
     document.getElementById('password').value = "";
+}
+function formatDeadline() {
+    var timestamp = document.getElementById('deadline').value;
+    var date = new Date(timestamp * 1000);
+    document.getElementById('deadlineformat').innerHTML = "<i>" + date.toUTCString() + "</i>";
 }
 </script>
 
@@ -95,7 +101,7 @@ Feed Address<br>
 Bet Type (2 = Equal, 3 = Not Equal)<br>
 <input type="number" id="bettype" step="1" style="width:100px;"><br>
 Deadline (Unix Timestamp)<br>
-<input type="text" id="deadline" style="width:150px;"><br>
+    <input type="text" id="deadline" style="width:150px;" onchange="formatDeadline()"> <span id="deadlineformat"></span><br>
 XCP Wager<br>
 <input type="number" id="wager" style="width:100px;"><br>
 XCP Counterwager<br>

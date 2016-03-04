@@ -99,7 +99,7 @@ function validateAndSend() {
 		} else if (isValidAddress(receiveAddr[i]) == false) {
 			document.getElementById('sendfeedback').innerHTML = "Send (#"+ (i+1) +") is invalid<br>Recipient address is not valid.";
 			return;
-		} else if (isValidAsset(sendAsset[i]) == false) {
+		} else if (isValidAsset(sendAsset[i]) == false && sendAsset[i] != 'XCP') {
 			document.getElementById('sendfeedback').innerHTML = "Send (#"+ (i+1) +") is invalid<br>Asset name is either 'A' followed by a 18-19 digits, or a word of 4-12 characters that cannot start with 'A'.";
 			return;
 		} else if (isNaN(sendAmount[i]) || sendAmount[i] <= 0) {
