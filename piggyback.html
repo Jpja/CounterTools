@@ -125,11 +125,11 @@ function validateTx() {
         return;
     }
     if (isValidAddress(recipient) == false) {
-        document.getElementById('confirmsend').innerHTML = "Cannot send. Send to address is not valid."
+        document.getElementById('confirmsend').innerHTML = "Cannot send. 'Send to' address is not valid."
         return;
     }
     if (isNaN(feeAmount) || feeAmount <= 0 || feeAmount >= 0.001) {
-        document.getElementById('confirmsend').innerHTML = "Cannot send. Fee amount should be a positive number around 0.0001."
+        document.getElementById('confirmsend').innerHTML = "Please reduce the fee amount."
         return;
     }
     if (isValidAsset(assetName) == false) {
@@ -137,7 +137,7 @@ function validateTx() {
         return;
     }
     if (isNaN(assetAmount) || assetAmount <= 0) {
-        document.getElementById('confirmsend').innerHTML = "Cannot send. Please enter a positive Asset Amount and try again."
+        document.getElementById('confirmsend').innerHTML = "Cannot send. Please enter a positive 'asset amount' and try again."
         return;
     }
     
@@ -156,6 +156,7 @@ function validateTx() {
     output += "Send To    "+recipientPrint+"\n";
     output += "Fee        "+parseFloat(feeAmount).toFixed(8)+" ($"+(feeAmount*btcPrice.usd).toFixed(2)+")\n";
     output += "Piggyback  "+parseFloat(assetAmount).toFixed(8)+" "+assetName+"\n";
+    output += "Send From  "+sendFrom+"\n";
     output += "</pre>";
     output += "<input type=\"password\" id=\"password\" style=\"width:150px;\"  placeholder=\"Password\"><br>";
     output += "<input type=\"button\" onclick=\"sendTx()\" id=\"sendtx\" value=\"CONFIRM & SEND\">";
