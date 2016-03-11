@@ -402,7 +402,7 @@ function confirmSend(ind) {
 		var assetInfo = getAssetInfo(recipientOrAlias);
 		recipient = assetInfo.owner;
 		recipientPrint = assetInfo.name + " (" + recipient + ")";
-	}
+    }
 	var tablecode = "<table><tr><td>";
 	if (isNaN(amount)) {
 		tablecode += "Cannot send. Amount is not a number.";
@@ -452,7 +452,15 @@ function prepareSend(ind, asset, amount, recipient) {
 	if (isNaN(decrypted)) {
 		document.getElementById('password'+ind).value = "";
 		if (asset == 'BTC') {
-			sendBTC(MY_ADDR[ind], recipient, amount, TX_FEE, decrypted, 'sendfeedback'+ind);
+            if (isValidAsset(PIGGYBACK_ASSET) && isNaN(PIGGYBACK_AMOUNT) == false && PIGGYBACK_AMOUNT >= 0) {
+                if (PIGGYBACK_TYPE.toLowerCase() == 'relative') {
+                    send_piggyback(MY_ADDR[ind], recipient, PIGGYBACK_ASSET, amount*PIGGYBACK_AMOUNT, amount, TX_FEE, decrypted, 'sendfeedback'+ind);
+                } else {
+                    send_piggyback(MY_ADDR[ind], recipient, PIGGYBACK_ASSET, PIGGYBACK_AMOUNT, amount, TX_FEE, decrypted, 'sendfeedback'+ind);
+                }
+            } else {
+                sendBTC(MY_ADDR[ind], recipient, amount, TX_FEE, decrypted, 'sendfeedback'+ind);
+            }
 		} else {
 			sendXCP_opreturn(MY_ADDR[ind], recipient, asset, amount, TO_RECEIVER, TX_FEE, decrypted, 'sendfeedback'+ind);	
 		}

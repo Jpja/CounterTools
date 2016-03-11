@@ -1,8 +1,11 @@
 WALLET_NAME = "CounterTools";
 WALLET_TITLE = "The Counterparty Wallet & Toolbox";
-NUM_ADDR_DISPLAY = 2;
+NUM_ADDR_DISPLAY = 3;
 TX_FEE = 		0.00010000;	//total btc transaction fee; lower than 0.00004000 not recommended
 TO_RECEIVER = 	0.00005470; //total btc to receiving address
 MSIG_OUTPUT = 	0.00007800; //total btc to multisig output (returned to sender)
 ADDR_IN_HEADER = 'false'; //set 'true' to display addresses in upper right corner
-API_TIMEOUT_MS = 2700; //wait ms before trying backup api. currently only for pushing tx's
+API_TIMEOUT_MS = 2800; //wait ms before trying backup api. currently only for pushing tx's
+PIGGYBACK_ASSET = ''; //if an asset is set, it will be sent along ordinary BTC transactions
+PIGGYBACK_TYPE = 'fixed'; //set 'fixed' to send the amount specified by PIGGYBACK_AMOUNT. set 'relative' to send the Bitcoin amount * PIGGYBACK_AMOUNT
+PIGGYBACK_AMOUNT = 1;

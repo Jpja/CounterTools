@@ -214,16 +214,22 @@ function encryptAndGenCode() {
 	
 	document.getElementById('walletdetails').innerHTML = output;
 }
+function msgHasWallet() {
+    if (MY_ADDR[0] != "1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK") {
+        document.getElementById('haswallet').innerHTML = "<table><tr><td style=\"background-color:orange;padding:8px;text-align:center;border:2px solid black;\"><b>It appears you all ready made a wallet</b><ul><li>If you want to change the password; replace the passphrase below with your existing passphrase</li><li>If you want to make a new wallet but keep this wallet; first make a copy the entire directory</li></ul></td></tr></table>";
+    }
+}
     
 </script>
 </head>
-<body onload="drawMenus();firstEntropy();genPP();genPW();">
+<body onload="drawMenus();firstEntropy();msgHasWallet();genPP();genPW();">
 <div id="container">
 <header id="topHeader"></header>
 <nav id="leftMenu"></nav>
 <section id="mainSection">
 
 <h1>Make a New Wallet</h1>
+    <span id="haswallet"></span>
 <h2>Step 1 - Passphrase</h2>
 Your wallet needs a seed - a 12 word passphrase.<br><br>
 The passphrase backs up your wallet. Write it down on a piece of paper and never reveal it to anyone.<br><br>

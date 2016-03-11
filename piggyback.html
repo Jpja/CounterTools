@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt"></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/aes.js"></script>-->
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<!--<script src="lib/chrome-wallet-mod/js/brainlite.js"></script>-->
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	<script src="lib/anchorme/anchorme.min.js"></script>
+	
+<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+	
+<script>
+var btcPrice = '?';
+var assetAmountSet = false;
+var btcAmount = 0;
+var recipient = '';
+var feeAmount = 0;
+var assetName = '';
+var assetAmount = 0;
+var sendFrom = '';
+
+function prepareValues() {
+    btcPrice = getPrice('BTC');
+	//document.getElementById('toreceiver').value = 0;
+	document.getElementById('txfee').value = TX_FEE.toFixed(8);
+    commentFee();
+	document.getElementById('asset').value = PIGGYBACK_ASSET;
+    //document.getElementById('assetamount').value = PIGGYBACK_AMOUNT;
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"sendaddress\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+	document.getElementById('submit').disabled = false;
+}
+function commentAmount() {
+    var btcAmount = document.getElementById('toreceiver').value;
+    if (isNaN(btcAmount) || btcAmount <= 0) {
+        document.getElementById('sendusd').innerHTML = "<span style=\"color:firebrick;\">Not a valid amount</span>";
+    } else {
+        document.getElementById('sendusd').innerHTML = '$' +  (btcAmount*btcPrice.usd).toFixed(2);
+        if (assetAmountSet == false && isValidAsset(PIGGYBACK_ASSET)) {
+            if (PIGGYBACK_TYPE.toLowerCase() == 'fixed') {
+                document.getElementById('assetamount').value = PIGGYBACK_AMOUNT;
+            } else if (PIGGYBACK_TYPE.toLowerCase() == 'relative') {
+                document.getElementById('assetamount').value = (btcAmount * PIGGYBACK_AMOUNT).toFixed(4);
+            }
+        }
+    }
+}
+function commentFee() {
+    var feeAmount = document.getElementById('txfee').value;
+    if (isNaN(feeAmount) || feeAmount <= 0) {
+        document.getElementById('feeusd').innerHTML = "<span style=\"color:firebrick;\">Not a valid amount</span>";
+    } else if (feeAmount >= 0.0003) {
+        document.getElementById('feeusd').innerHTML = "<span style=\"color:firebrick;\"><b>$"+(feeAmount*btcPrice.usd).toFixed(2)+"</b></span>";
+    } else {
+        document.getElementById('feeusd').innerHTML = '$' + (feeAmount*btcPrice.usd).toFixed(2);
+    }      
+}
+function validateTx() {
+    if (document.getElementById("submit").value == "START OVER") {
+        enableForms();
+        return;
+    }
+    
+    btcAmount = document.getElementById('toreceiver').value;
+    var recipientOrAlias = document.getElementById('sendto').value;
+    feeAmount = document.getElementById('txfee').value;
+    assetName = document.getElementById('asset').value;
+    assetAmount = document.getElementById('assetamount').value;
+    sendFrom = document.getElementById("sendaddress");
+	sendFrom = sendFrom.options[sendFrom.selectedIndex].text;
+    
+    recipient = recipientOrAlias;
+    var recipientPrint = recipientOrAlias;
+    if (isValidAsset(recipientOrAlias.toUpperCase())) {
+		var assetInfo = getAssetInfo(recipientOrAlias);
+		recipient = assetInfo.owner;
+		recipientPrint = assetInfo.name + " (" + recipient + ")";
+    }
+    
+    //Cheks. Note also other tests later .. just good to catch before signing
+    if (isNaN(btcAmount) || btcAmount <= 0) {
+        document.getElementById('confirmsend').innerHTML = "Cannot send. Please enter a positive Bitcoin Amount and try again."
+        return;
+    }
+    if (isValidAddress(recipient) == false && isValidAsset(recipientOrAlias.toUpperCase())) {
+        document.getElementById('confirmsend').innerHTML = "Cannot send. Alias is either an unregistered asset or the API lookup failed."
+        return;
+    }
+    if (isValidAddress(recipient) == false) {
+        document.getElementById('confirmsend').innerHTML = "Cannot send. 'Send to' address is not valid."
+        return;
+    }
+    if (isNaN(feeAmount) || feeAmount <= 0 || feeAmount >= 0.001) {
+        document.getElementById('confirmsend').innerHTML = "Please reduce the fee amount."
+        return;
+    }
+    if (isValidAsset(assetName) == false) {
+        document.getElementById('confirmsend').innerHTML = "Cannot send. Piggyback asset is not valid."
+        return;
+    }
+    if (isNaN(assetAmount) || assetAmount <= 0) {
+        document.getElementById('confirmsend').innerHTML = "Cannot send. Please enter a positive 'asset amount' and try again."
+        return;
+    }
+    
+    //Disable forms while validating
+    document.getElementById('toreceiver').disabled = true;
+    document.getElementById('sendto').disabled = true;
+    document.getElementById('txfee').disabled = true;
+    document.getElementById('asset').disabled = true;
+    document.getElementById('assetamount').disabled = true;
+    document.getElementById("sendaddress").disabled = true;
+    document.getElementById("submit").value = "START OVER";
+    
+    
+    var output = "<pre style=\"color:#003300;\">";
+    output += "BTC Amount "+parseFloat(btcAmount).toFixed(8)+" ($"+(btcAmount*btcPrice.usd).toFixed(2)+")\n";
+    output += "Send To    "+recipientPrint+"\n";
+    output += "Fee        "+parseFloat(feeAmount).toFixed(8)+" ($"+(feeAmount*btcPrice.usd).toFixed(2)+")\n";
+    output += "Piggyback  "+parseFloat(assetAmount).toFixed(8)+" "+assetName+"\n";
+    output += "Send From  "+sendFrom+"\n";
+    output += "</pre>";
+    output += "<input type=\"password\" id=\"password\" style=\"width:150px;\"  placeholder=\"Password\"><br>";
+    output += "<input type=\"button\" onclick=\"sendTx()\" id=\"sendtx\" value=\"CONFIRM & SEND\">";
+    
+    document.getElementById('confirmsend').innerHTML = output;
+    
+}
+function enableForms() {
+    document.getElementById('toreceiver').disabled = false;
+    document.getElementById('sendto').disabled = false;
+    document.getElementById('txfee').disabled = false;
+    document.getElementById('asset').disabled = false;
+    document.getElementById('assetamount').disabled = false;
+    document.getElementById("sendaddress").disabled = false;
+    document.getElementById("submit").value = "VALIDATE";
+    document.getElementById('confirmsend').innerHTML = "";
+}
+function sendTx() {
+    var password = document.getElementById("password").value;
+	var decrypted = decryptPassword(password); //returns passphrase on success, else a number code
+    if (isNaN(decrypted)) {
+        send_piggyback(sendFrom, recipient, assetName, assetAmount, btcAmount, feeAmount, decrypted);
+    }
+    document.getElementById('password').value = "";
+}
+</script>
+
+</head>
+<body onload="drawMenus();prepareValues();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<div class="boxInfo">If the recipient's wallet is <i>not</i> Counterparty aware, it will simply receive the Bitcoins and ignore the Counterpaty asset.<br><br>To them the Bitcoin transfer is just like any other Bitcoin transacion. There is no risk involved.<br><br>Your added cost of including a Counterparty asset is zero.<br><br>You can distribute <i>coupons</i> and <i>discount cards</i>. Those who know how to read Counterparty data will see your promototions.</div>
+<h1>Piggyback Transaction</h1>
+
+Send Bitcoin and embed Counterparty tokens. 
+<br><br>
+Bitcoin Amount<br>
+<input type="text" id="toreceiver" style="width:150px;" placeholder="0" onchange="commentAmount();" onClick="document.getElementById('sendusd').innerHTML='';"> <span id="sendusd"></span><br>
+Send To<br>
+<input type="text" id="sendto" placeholder="Address or Alias" style="width:400px;" onchange="commentAddress();"> <span id="addrfeedback"></span><br>
+Tx Fee<br>
+<input type="text" id="txfee" style="width:150px;" onchange="commentFee();" onClick="document.getElementById('feeusd').innerHTML='';"> <span id="feeusd"></span><br>
+Piggyback Asset<br>
+<input type="text" id="asset" style="width:150px;"><br>
+Asset Amount<br>
+<input type="text" id="assetamount" style="width:150px;"  placeholder="0"  onchange="assetAmountSet=true;"><br>
+Send From Address<br>
+<span id="optionslist"></span><br>
+
+<input type="button" onclick="validateTx()" id="submit" value="VALIDATE"><br>
+<div id="confirmsend">&nbsp;</div>
+<div id="sendfeedback">&nbsp;</div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>

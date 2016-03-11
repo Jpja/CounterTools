@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title id="pageTitle"></title>
+	<link rel="shortcut icon" href="img/xcpblackyellow.ico">
+	<link href="settings/styles.css" rel="stylesheet">
+	<script src="settings/general.txt"></script>
+	<script src="settings/assets.txt"></script>
+	<script src="settings/menu.txt"></script>
+	<script src="settings/encryptedpp.txt"></script>
+	<script src="settings/asset_list.txt" async></script>
+	<script src="drawmenus.js"></script>
+	<script src="lib/jquery/jquery-2.1.4.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/aes.js"></script>
+	<script src="lib/cryptojs v3.1.2/rollups/sha256.js"></script>
+	<script src="lib/seedrandom/seedrandom.min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcore/bitcore.min.js"></script>
+	<script src="lib/xcp-toolbox/passphrase.js"></script>
+	<script src="lib/xcp-toolbox/password.js"></script>
+	<script src="lib/xcp-toolbox/api.js"></script>
+	<script src="lib/xcp-toolbox/misc.js"></script>
+	<script src="lib/qrcodejs/qrcode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/aes.js"></script>
+	<script src="lib/chrome-wallet-mod/tipsplash.js"></script>
+	<script src="lib/chrome-wallet-mod/issueticker.js"></script>
+	<script src="lib/chrome-wallet-mod/js/mnemonic.js"></script>
+	<script src="lib/chrome-wallet-mod/js/utxo.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/transactions.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/issuance.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/rc4.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/convert-type.js"></script>
+	<script src="lib/chrome-wallet-mod/js/xcp-js/decode.js"></script>
+	<script src="lib/chrome-wallet-mod/js/biginteger.js"></script>
+	<script src="lib/chrome-wallet-mod/js/hex2dec-cs.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinsig.js"></script>
+	<script src="lib/chrome-wallet-mod/js/bitcoinjs-min.js"></script>
+	<script src="lib/chrome-wallet-mod/js/detect.js"></script>
+	<script src="lib/anchorme/anchorme.min.js"></script>
+	<script src="lib/cryptojs v3.1.2/components/enc-base64-min.js"></script>
+
+<script>
+function prepareValues() {
+	document.getElementById('bettype').value = 2;
+	//option list with user's addresses
+	var numAddr = Math.min(NUM_ADDR_DISPLAY, MY_ADDR.length);
+	var optionsList = "<select id=\"sendaddress\">";
+	for(i=0; i < numAddr; i++) {
+		optionsList += "<option>"+MY_ADDR[i]+"</option>";
+	}
+	optionsList += "</select>";
+	document.getElementById('optionslist').innerHTML = optionsList;
+    
+    //pre fill some  values for easier testing
+    document.getElementById('feedaddress').value = "1AeEhRpChp1TteqBTkC4GPmyQJgH31MMmK";
+    var deadline = Math.floor((new Date()).getTime() / 1000);
+    deadline += 3600 * 24 * 5 //5 days from now
+    deadline = Math.ceil(deadline/30000)*30000; //increment of 30k (~8 hr) because useually you want same deadline
+    document.getElementById('deadline').value = deadline;
+    document.getElementById('target').value = 1;
+    formatDeadline();
+}
+function validateAndSendBet() {
+	var feedAddress = document.getElementById('feedaddress').value;
+	var betType = document.getElementById('bettype').value;
+	var deadline = document.getElementById('deadline').value;
+	var wager = document.getElementById('wager').value;
+	var counterwager = document.getElementById('counterwager').value;
+	var expiration = document.getElementById('expiration').value;
+	var target = document.getElementById('target').value;
+	var address = document.getElementById("sendaddress");
+	address = address.options[address.selectedIndex].text;
+	var password = document.getElementById("password").value;
+	var decrypted = decryptPassword(password); //returns passphrase on success, else a number code
+    if (isNaN(decrypted)) {
+        sendBet_opreturn(address, feedAddress, betType, deadline, wager, counterwager, expiration, target, TO_RECEIVER, TX_FEE, decrypted);
+    }
+    document.getElementById('password').value = "";
+}
+function formatDeadline() {
+    var timestamp = document.getElementById('deadline').value;
+    var date = new Date(timestamp * 1000);
+    document.getElementById('deadlineformat').innerHTML = "<i>" + date.toUTCString() + "</i>";
+}
+</script>
+
+</head>
+<body onload="drawMenus();prepareValues();">
+<div id="container">
+<header id="topHeader"></header>
+<nav id="leftMenu"></nav>
+<section id="mainSection">
+
+<!--Main content-->
+<h1>Make Bet Transaction</h1>
+    
+    Developers can play with this form. Not meant for end users. <br><br>
+
+Feed Address<br>
+<input type="text" id="feedaddress" maxlength="46" style="width:400px;"><br>
+Bet Type (2 = Equal, 3 = Not Equal)<br>
+<input type="number" id="bettype" step="1" style="width:100px;"><br>
+Deadline (Unix Timestamp)<br>
+    <input type="text" id="deadline" style="width:150px;" onchange="formatDeadline()"> <span id="deadlineformat"></span><br>
+XCP Wager<br>
+<input type="number" id="wager" style="width:100px;"><br>
+XCP Counterwager<br>
+<input type="number" id="counterwager" style="width:100px;"><br>
+Blocks Until Expiration<br>
+<input type="number" id="expiration" step="1" style="width:100px;"><br>
+Target Value<br>
+<input type="number" id="target" style="width:100px;"><br>
+Bet from address<br>
+<span id="optionslist"></span><br>
+Password<br>
+<input type="password" id="password" placeholder="Password"><br>
+<input type="button" onclick="validateAndSendBet()" id="submit" value="GENERATE BET">
+<div id="sendfeedback">&nbsp;</div>
+
+</section>
+<footer id="bottomFooter"></footer>
+</div>
+
+</body>
+</html>
