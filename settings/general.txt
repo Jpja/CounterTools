@@ -1,5 +1,5 @@
 WALLET_NAME = "CounterTools";
-WALLET_TITLE = "The Counterparty Wallet & Toolbox";
+WALLET_TITLE = "The Bitcoin & Counterparty Wallet";
 NUM_ADDR_DISPLAY = 3;
 TX_FEE = 		0.00010000;	//total btc transaction fee; lower than 0.00004000 not recommended
 TO_RECEIVER = 	0.00005470; //total btc to receiving address
