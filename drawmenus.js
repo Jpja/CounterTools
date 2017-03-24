@@ -67,7 +67,7 @@ function bottomFooter() {
 		}
 	}
 	if (author == undefined) author = "?";
-	output += "<a href=\"https://github.com/Jpja\" target=\"_blank\">CounterTools v0.2</a><br>";
+	output += "<a href=\"https://github.com/Jpja\" target=\"_blank\">CounterTools v0.3</a><br>";
 	output += "Module by: " + author + "<br>";
 	output += "CounterTools designed by: JP Janssen<br>";
 	output += "Counterparty APIs: <a href=\"http://blockscan.com/\" target=\"_blank\">Blockscan.com</a>, <a href=\"http://counterpartychain.io/\" target=\"_blank\">CounterpartyChain.io</a><br>";

@@ -22,6 +22,7 @@ MENU_ITEMS = [
 		{ "file": "export.html", "name": "Export Keys", "author": "JP Janssen" }
 	]},
 	{  "category": "Misc", "items": [
+		{ "file": "craps.html", "name": "XCP Craps", "author": "JP Janssen" },
 		{ "file": "youtube.html", "name": "YouTube", "author": "JP Janssen" },
 		{ "file": "spellsofgenesis.html", "name": "Spells of Genesis", "author": "JP Janssen" }
 	]},
