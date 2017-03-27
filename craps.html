@@ -43,7 +43,7 @@
 
 //Parameters
 var feedAddress = "1BetXQ5w9mMmJosZ21jUtrebdpgMhYQUaZ"; //Oracle
-var expiration = 1008; //One week of blocks (TODO: confirm that no bet can match after deadline .. if this is not the case then problem)
+//var expiration = 1008; //One week of blocks (TODO: confirm that no bet can match after deadline .. if this is not the case then problem)
 var target = 7; //player wins if sum of three dice rolls is this
 //var closeBefore = 60; //dont allow placing bet X minutes before deadline
 //var openAfter = 300; //open up next week's game X minutes after this game
@@ -55,6 +55,7 @@ var canPlay = true;
 var deadline; //timestamp of next bet
 var deadlineUTC;
 var deadlineLocal;
+var expiration = 1; //number of blocks an unmatched bet is open for matching
 
     
 function prepareValues() {
@@ -91,6 +92,8 @@ function prepareValues() {
 	//if (dNow.getTime() + 1000 * 60 * openAfter < d.getTime() - 1000 * 60 * 60 * 24 * 7) canPlay = false;
 	if (canPlay == true) {
 		document.getElementById('nextgame').innerHTML = "Place your bet now<br>on the game at<br>"+deadlineLocal+"<br><i>("+deadlineUTC+")</i>";
+        expiration = Math.floor((deadline - 7200 - dNow.getTime() / 1000) / 600); //aim to expire 1hr before deadline ... won't always do ... depends on blocks until confirmation (assuming 1hr) and randomness in block times
+        expiration = Math.max(expiration, 1);
     } else {
 		document.getElementById('nextgame').innerHTML = "<b>Sorry! Too late to play!<b><br> Come back tomorrow for next week's game!";
 	}
