@@ -43,11 +43,10 @@
 
 //Parameters
 var feedAddress = "1BetXQ5w9mMmJosZ21jUtrebdpgMhYQUaZ"; //Oracle
-//var expiration = 1008; //One week of blocks (TODO: confirm that no bet can match after deadline .. if this is not the case then problem)
 var target = 7; //player wins if sum of three dice rolls is this
-//var closeBefore = 60; //dont allow placing bet X minutes before deadline
-//var openAfter = 300; //open up next week's game X minutes after this game
-
+var smartFee = true; //high fee if deadline soon, else low fee
+    
+    
 //defaul btc fee, btc dust to receiver (oracle) etc can be set in 'settings/general.txt'
     
 
@@ -87,19 +86,33 @@ function prepareValues() {
     //deadlineUTC = d.toUTCString();
     deadlineUTC = addZero(d.getUTCHours())+":"+addZero(d.getUTCMinutes())+" UTC"
     deadlineLocal = addZero(d.getHours())+":"+addZero(d.getMinutes()) + " " + d.toDateString();
-	var dNow = new Date();
-	//if (dNow.getTime() + 1000 * 60 * closeBefore > d.getTime()) canPlay = false;
-	//if (dNow.getTime() + 1000 * 60 * openAfter < d.getTime() - 1000 * 60 * 60 * 24 * 7) canPlay = false;
 	if (canPlay == true) {
 		document.getElementById('nextgame').innerHTML = "Place your bet now<br>on the game at<br>"+deadlineLocal+"<br><i>("+deadlineUTC+")</i>";
-        expiration = Math.floor((deadline - 7200 - dNow.getTime() / 1000) / 600); //aim to expire 1hr before deadline ... won't always do ... depends on blocks until confirmation (assuming 1hr) and randomness in block times
-        expiration = Math.max(expiration, 1);
     } else {
 		document.getElementById('nextgame').innerHTML = "<b>Sorry! Too late to play!<b><br> Come back tomorrow for next week's game!";
 	}
     //miner fee
-    document.getElementById('fee').value = parseFloat(TX_FEE);
+    var fee = parseFloat(TX_FEE);
+    if (smartFee) {
+        if (today == 5 && canPlay) fee *= 2;
+        else if (daysleft >= 2) fee *= 0.7;
+    }
+    document.getElementById('fee').value = fee.toFixed(5);
     mBtcFee();
+}
+function estConfWait(fee) {
+    //Estimated time in seconds until tx is included in a block
+    //Very rough estimate. Does not use an api to get current mempool etc
+    //Neither looks at size of tx
+    var blockWait = 0;
+    if (fee >= 0.00030) blockWait = 1; //about $0.30 fee should usually be confirmed immediately
+    else if (fee >= 0.00010) blockWait = 3;
+    else if (fee >= 0.00008) blockWait = 10;
+    else if (fee >= 0.00007) blockWait = 25;
+    else if (fee >= 0.00006) blockWait = 36; //this one I tested. took 6 hr (36 blocks) for 287 byte tx
+    else if (fee >= 0.00004) blockWait = 100;
+    else blockWait = 400;
+    return blockWait * 600;
 }
 function validateAndSendBet() {
 	//var feedAddress = document.getElementById('feedaddress').value;
@@ -121,6 +134,14 @@ function validateAndSendBet() {
         counterwager = wager / odds;
     }
     counterwager -= 0.00000001; //in case of rounding error
+    
+    //set expiration (number of blocks)
+    //important that unsettled bets expire before dice roll
+    //else the oracle MUST disable open bets
+    var dNow = new Date();
+    expiration = Math.floor((deadline - 5400 - estConfWait(fee) - dNow.getTime() / 1000) / 600); //aim to expire 90 min before deadline ... won't always do ... depends on confirmation time and randomness in block times
+    expiration = Math.max(expiration, 1);
+    
     if (isNaN(decrypted)) {
         sendBet_opreturn(address, feedAddress, betType, deadline, wager, counterwager, expiration, target, TO_RECEIVER, fee, decrypted);
     }
@@ -186,7 +207,7 @@ function addZero(i) {
 Select Type<br>
 <select style="width: 280px" id="bettype" name="Bet Type" onchange="explainOdds()">
   <option  value="2" selected="selected">'Player' (Bet on 7)</option>
-  <option  value="3" selected="selected">'The House' (Not 7)</option>
+  <option  value="3">'The House' (Not 7)</option>
 </select><br>
 XCP Bet Amount<br>
 <input type="number" id="wager" style="width:100px;" step="0.1" onchange="explainOdds()"><br>
@@ -196,7 +217,7 @@ Odds<br>
 Bet from address<br>
 <span id="optionslist"></span><br>
 Miner Fee<br>
-<input type="number" id="fee" style="width:100px;" onchange="mBtcFee()" step="0.0001"> BTC <i><span id="feembtc"></span></i><br>
+<input type="number" id="fee" style="width:100px;" onchange="mBtcFee()" step="0.00001"> BTC <i><span id="feembtc"></span></i><br>
 Password<br>
 <input type="password" id="password" placeholder="Password"><br>
 <input type="button" onclick="validateAndSendBet()" id="submit" value="GENERATE BET">
