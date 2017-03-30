@@ -82,7 +82,7 @@ function prepareValues() {
     d.setUTCSeconds(0);
     d.setUTCMilliseconds(0);
     d.setTime(d.getTime() + 1000 * 60 * 60 * 24 * daysleft);
-    deadline = Math.floor(d.getTime() / 1000); //no milliseconds to be used in Counterparty
+    deadline = Math.floor(d.getTime() / 1000); //seconds, not milliseconds, to be used in Counterparty
     //deadlineUTC = d.toUTCString();
     deadlineUTC = addZero(d.getUTCHours())+":"+addZero(d.getUTCMinutes())+" UTC"
     deadlineLocal = addZero(d.getHours())+":"+addZero(d.getMinutes()) + " " + d.toDateString();
@@ -93,9 +93,13 @@ function prepareValues() {
 	}
     //miner fee
     var fee = parseFloat(TX_FEE);
+    var dNow = new Date();
+    var timeLeft = deadline - Math.floor(dNow.getTime() / 1000); //seconds until game starts
     if (smartFee) {
-        if (today == 5 && canPlay) fee *= 2;
-        else if (daysleft >= 2) fee *= 0.7;
+        if (timeLeft < 2*3600)       fee *= 3;
+        else if (timeLeft < 4*3600)  fee *= 2;
+        else if (timeLeft < 24*3600) fee *= 1;
+        else                         fee *= 0.7;
     }
     document.getElementById('fee').value = fee.toFixed(5);
     mBtcFee();
@@ -105,7 +109,7 @@ function estConfWait(fee) {
     //Very rough estimate. Does not use an api to get current mempool etc
     //Neither looks at size of tx
     var blockWait = 0;
-    if (fee >= 0.00030) blockWait = 1; //about $0.30 fee should usually be confirmed immediately
+    if (fee >= 0.00030) blockWait = 1; //about $0.30 fee should usually be confirmed in first block
     else if (fee >= 0.00010) blockWait = 3;
     else if (fee >= 0.00008) blockWait = 10;
     else if (fee >= 0.00007) blockWait = 25;
