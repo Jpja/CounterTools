@@ -73,7 +73,7 @@ function prepareValues() {
     var today = d.getUTCDay(); //today's weekday .. lottery on friday, day 5
     var daysleft = 5 - today;
     if (today == 6) daysleft = 6;
-    if (today == 5 && d.getUTCHours() >= 14) {
+    if (today == 5 && d.getUTCHours() >= 12) {
 		daysleft = 7;
 		canPlay = false;
 	}
@@ -96,8 +96,8 @@ function prepareValues() {
     var dNow = new Date();
     var timeLeft = deadline - Math.floor(dNow.getTime() / 1000); //seconds until game starts
     if (smartFee) {
-        if (timeLeft < 2*3600)       fee *= 3;
-        else if (timeLeft < 4*3600)  fee *= 2;
+        if (timeLeft < 5*3600)       fee *= 2.5;
+        else if (timeLeft < 7*3600)  fee *= 2;
         else if (timeLeft < 24*3600) fee *= 1;
         else                         fee *= 0.7;
     }
@@ -110,10 +110,11 @@ function estConfWait(fee) {
     //Neither looks at size of tx
     var blockWait = 0;
     if (fee >= 0.00030) blockWait = 1; //about $0.30 fee should usually be confirmed in first block
-    else if (fee >= 0.00010) blockWait = 3;
-    else if (fee >= 0.00008) blockWait = 10;
-    else if (fee >= 0.00007) blockWait = 25;
-    else if (fee >= 0.00006) blockWait = 36; //this one I tested. took 6 hr (36 blocks) for 287 byte tx
+    else if (fee >= 0.00015) blockWait = 3;
+    else if (fee >= 0.00010) blockWait = 9;
+    else if (fee >= 0.00008) blockWait = 20;
+    else if (fee >= 0.00007) blockWait = 30;
+    else if (fee >= 0.00006) blockWait = 50; //one I tested took 6 hr (36 blocks) for 287 byte tx. err on safe side
     else if (fee >= 0.00004) blockWait = 100;
     else blockWait = 400;
     return blockWait * 600;
@@ -143,7 +144,7 @@ function validateAndSendBet() {
     //important that unsettled bets expire before dice roll
     //else the oracle MUST disable open bets
     var dNow = new Date();
-    expiration = Math.floor((deadline - 5400 - estConfWait(fee) - dNow.getTime() / 1000) / 600); //aim to expire 90 min before deadline ... won't always do ... depends on confirmation time and randomness in block times
+    expiration = Math.floor((deadline - 3600*3 - estConfWait(fee) - dNow.getTime() / 1000) / 600); //aim to expire 3 hr before deadline ... won't always do ... depends on confirmation time and randomness in block times
     expiration = Math.max(expiration, 1);
     
     if (isNaN(decrypted)) {
