@@ -134,9 +134,9 @@ function validateAndSendBet() {
     
     var odds = document.getElementById('odds').value;
     if (betType == 2) {
-        counterwager = wager * odds;
+        counterwager = wager * (odds - 1);
     } else {
-        counterwager = wager / odds;
+        counterwager = wager / (odds - 1);
     }
     counterwager -= 0.00000001; //in case of rounding error
     
@@ -175,13 +175,13 @@ function explainOdds() {
  odds = parseFloat(odds);
  var win = 0;
  if (type == "2") {
-     win = xcp * (odds+1);
-     win = win * 0.97; //oracle fee
-     document.getElementById('oddsexplained').innerHTML = "You will win "+win.toFixed(2)+" XCP if the sum is seven.<br>Else you lose "+xcp+" XCP.";
+     win = xcp + xcp * (odds - 1);
+     var winNet = win * 0.97; //oracle fee
+     document.getElementById('oddsexplained').innerHTML = "You will win "+win.toFixed(2)+" XCP if the sum is seven<br>After a 3% fee, that's <b>"+winNet.toFixed(2)+" XCP</b>";
  } else {
-     win = xcp + xcp / odds;
-     win = win * 0.97; //oracle fee
-     document.getElementById('oddsexplained').innerHTML = "You will win "+win.toFixed(2)+" XCP if the sum is NOT seven.<br>Else you lose "+xcp+" XCP.";
+     win = xcp + xcp / (odds - 1);
+     var winNet = win * 0.97; //oracle fee
+     document.getElementById('oddsexplained').innerHTML = "You will win "+win.toFixed(2)+" XCP if the sum is NOT seven<br>After a 3% fee, that's <b>"+winNet.toFixed(2)+" XCP</b>";
  }
 }
 function addZero(i) {
