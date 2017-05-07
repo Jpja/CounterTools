@@ -3,6 +3,9 @@ CounterTools is a modular JavaScript Bitcoin and Counterparty GUI Wallet.
 
 Download the zip file, extract the directory and open index.html. Follow instructions in the GUI.
 
+## Disclaimer
+The wallet is not actively maintained. Bugs and loss of funds may occur. No warranty. For development use only.
+
 ## Features
 - Send BTC, XCP and assets
 - View BTC, XCP and asset balances
